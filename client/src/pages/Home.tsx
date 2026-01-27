@@ -53,10 +53,10 @@ export default function Home() {
   const [vFrete, setVFrete] = useState<number>(25);
   const [multExcl, setMultExcl] = useState<number>(4.5);
 
-  // Resultados
-  const [resUn, setResUn] = useState("");
-  const [resKit, setResKit] = useState("");
-  const [resZap, setResZap] = useState("");
+  const [resUn, setResUn] = useState<string>("");
+  const [resKit, setResKit] = useState<string>("");
+  const [resZap, setResZap] = useState<string>("");
+  const [resCustoTotal, setResCustoTotal] = useState<string>("");
 
   const handleCalcular = () => {
     const params: ParametrosCalculo = {
@@ -89,6 +89,7 @@ export default function Home() {
     setResUn(resultado.resUn);
     setResKit(resultado.resKit);
     setResZap(resultado.resZap);
+    setResCustoTotal(resultado.resCustoTotal);
   };
 
   const copyToClipboard = (text: string) => {
@@ -390,6 +391,22 @@ export default function Home() {
                             size="sm"
                             variant="ghost"
                             onClick={() => copyToClipboard(resKit)}
+                            className="mt-2 w-full"
+                          >
+                            <Copy className="w-4 h-4 mr-2" />
+                            Copiar
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label className="text-sm text-gray-600">Custos Totais</Label>
+                        <div className="mt-2 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                          <p className="text-sm font-mono text-yellow-900">{resCustoTotal}</p>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => copyToClipboard(resCustoTotal)}
                             className="mt-2 w-full"
                           >
                             <Copy className="w-4 h-4 mr-2" />

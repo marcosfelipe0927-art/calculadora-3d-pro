@@ -115,6 +115,9 @@ export interface ResultadoCalculo {
   resZap: string;
   valoresUnitarios: number[];
   valoresKit: number[];
+  custoUnitario: number;
+  custoTotal: number;
+  resCustoTotal: string;
 }
 
 export function calcularPro(params: ParametrosCalculo): ResultadoCalculo {
@@ -208,10 +211,53 @@ export function calcularPro(params: ParametrosCalculo): ResultadoCalculo {
   const resUn = `Mínimo: R$ ${vFinais[0].toFixed(2)} | Sugerido: R$ ${vFinais[1].toFixed(2)} | Premium: R$ ${vFinais[2].toFixed(2)}`;
   const resKit = `Mínimo: R$ ${kFinais[0].toFixed(2)} | Sugerido: R$ ${kFinais[1].toFixed(2)} | Premium: R$ ${kFinais[2].toFixed(2)}`;
 
+  // Cálculo de custos totais (com todas as taxas)
+  // Custo base: material + energia
+  let custoBaseSemRisco = cMaterial + cOperacional;
+  
+  // Adicionar risco se marcado
+  let custoComRisco = custoBaseSemRisco;
+  if (chkRisco) custoComRisco *= 1.1;
+  
+  // Adicionar trabalho de acabamento
+  let custoComAcabamento = custoComRisco + custoTrabalhoUnitario;
+  
+  // Adicionar taxas (ICMS, ISS, Shopee, ML)
+  const taxasCusto = 
+    (chkIcms ? (aliquotasIcms[estado] || 18) / 100 : 0) +
+    (chkIss ? 0.05 : 0) +
+    (mkpShopee ? 0.15 : 0) +
+    (mkpMl ? 0.17 : 0);
+  
+  // Adicionar modelagem própria (multiplica por 1.5)
+  let custoComTaxas = custoComAcabamento;
+  if (taxasCusto < 1) {
+    custoComTaxas = custoComAcabamento / (1 - taxasCusto);
+  }
+  
+  if (exclusivo) {
+    custoComTaxas *= 1.5;
+  }
+  
+  // Adicionar frete (sem desconto)
+  let custoUnitario = custoComTaxas;
+  if (chkFrete) custoUnitario += vFrete;
+  
+  // Custo total do lote
+  let custoTotal = custoComTaxas * qtdKit;
+  if (chkFrete) custoTotal += vFrete;
+  
+  // Formatação para exibição
+  const labelUnidade = qtdKit === 1 ? "Unidade" : "Unidades";
+  const resCustoTotal = `${labelUnidade}: R$ ${custoUnitario.toFixed(2)}${qtdKit > 1 ? ` | ${labelUnidade}s: R$ ${custoTotal.toFixed(2)}` : ""}`;
+
   // Texto WhatsApp (Usa o valor Sugerido como padrão)
   const dataE = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
   const dataFormatada = `${String(dataE.getDate()).padStart(2, "0")}/${String(dataE.getMonth() + 1).padStart(2, "0")}`;
-  const txt = `📄 ORÇAMENTO: ${nomeCliente || "Peça 3D"}\n💰 Valor Total: R$ ${kFinais[1].toFixed(2)}\n📅 Entrega estimada: ${dataFormatada}\n⚙️ ${material} | ${nomeMaquina}`;
+  const txt = `📄 ORÇAMENTO: ${nomeCliente || "Peça 3D"}
+💰 Valor Total: R$ ${kFinais[1].toFixed(2)}
+📅 Entrega estimada: ${dataFormatada}
+⚙️ ${material} | ${nomeMaquina}`;
 
   return {
     resUn,
@@ -219,5 +265,8 @@ export function calcularPro(params: ParametrosCalculo): ResultadoCalculo {
     resZap: txt,
     valoresUnitarios: vFinais,
     valoresKit: kFinais,
+    custoUnitario,
+    custoTotal,
+    resCustoTotal,
   };
 }
