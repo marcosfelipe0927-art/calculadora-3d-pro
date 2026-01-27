@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +21,7 @@ import {
   aliquotasIcms,
   type ParametrosCalculo,
 } from "@/lib/calculadora";
+import { useState } from "react";
 
 export default function Home() {
   // Estado da Calculadora
@@ -48,7 +48,7 @@ export default function Home() {
   // Configurações
   const [nomeMaquina, setNomeMaquina] = useState<string>("Bambu Lab A1");
   const [cMaq, setCMaq] = useState<number>(0.9);
-  const [estado, setEstado] = useState<string>("Média Nacional");
+  const [estado, setEstado] = useState<string>("SP");
   const [vHora, setVHora] = useState<number>(40);
   const [vFrete, setVFrete] = useState<number>(25);
   const [multExcl, setMultExcl] = useState<number>(4.5);
@@ -99,34 +99,32 @@ export default function Home() {
 
   const downloadOrcamento = () => {
     const conteudo = `${resZap}\n\n---\n\nPreço Unitário:\n${resUn}\n\nPreço Total:\n${resKit}`;
-    const element = document.createElement("a");
-    element.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(conteudo));
-    element.setAttribute("download", `orcamento_${nomeCliente || "peca"}.txt`);
-    element.style.display = "none";
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
-    toast.success("Orçamento baixado!");
+    const blob = new Blob([conteudo], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "orcamento.txt";
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50">
-      <div className="container py-8">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 p-4">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">🚀 Calculadora 3D PRO</h1>
-          <p className="text-gray-600">Calcule custos e preços para impressão 3D com precisão</p>
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-orange-900 mb-2">🚀 Calculadora 3D PRO</h1>
+          <p className="text-orange-700">Calcule custos e preços para impressão 3D com precisão</p>
         </div>
 
         <Tabs defaultValue="calculadora" className="w-full">
-          <TabsList className="grid w-full max-w-md mx-auto mb-8 grid-cols-2">
+          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
             <TabsTrigger value="calculadora">📊 Calculadora</TabsTrigger>
             <TabsTrigger value="configuracoes">⚙️ Configurações</TabsTrigger>
           </TabsList>
 
-          {/* ABA: CALCULADORA */}
-          <TabsContent value="calculadora" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <TabsContent value="calculadora">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
               {/* Coluna 1: Dados da Peça */}
               <Card>
                 <CardHeader>
@@ -254,14 +252,14 @@ export default function Home() {
                   <CardTitle className="text-lg">🛒 Taxas e Impostos</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
                     <div className="flex items-center space-x-2">
                       <Checkbox
                         id="icms"
                         checked={chkIcms}
                         onCheckedChange={(checked) => setChkIcms(checked as boolean)}
                       />
-                      <Label htmlFor="icms" className="cursor-pointer">
+                      <Label htmlFor="icms" className="cursor-pointer text-sm">
                         ICMS (Estado)
                       </Label>
                     </div>
@@ -272,7 +270,7 @@ export default function Home() {
                         checked={chkIss}
                         onCheckedChange={(checked) => setChkIss(checked as boolean)}
                       />
-                      <Label htmlFor="iss" className="cursor-pointer">
+                      <Label htmlFor="iss" className="cursor-pointer text-sm">
                         ISS (5%)
                       </Label>
                     </div>
@@ -283,7 +281,7 @@ export default function Home() {
                         checked={chkRisco}
                         onCheckedChange={(checked) => setChkRisco(checked as boolean)}
                       />
-                      <Label htmlFor="risco" className="cursor-pointer">
+                      <Label htmlFor="risco" className="cursor-pointer text-sm">
                         10% Risco/Falha
                       </Label>
                     </div>
@@ -294,7 +292,7 @@ export default function Home() {
                         checked={exclusivo}
                         onCheckedChange={(checked) => setExclusivo(checked as boolean)}
                       />
-                      <Label htmlFor="exclusivo" className="cursor-pointer">
+                      <Label htmlFor="exclusivo" className="cursor-pointer text-sm">
                         💎 Modelagem Própria
                       </Label>
                     </div>
@@ -305,7 +303,7 @@ export default function Home() {
                         checked={mkpShopee}
                         onCheckedChange={(checked) => setMkpShopee(checked as boolean)}
                       />
-                      <Label htmlFor="shopee" className="cursor-pointer">
+                      <Label htmlFor="shopee" className="cursor-pointer text-sm">
                         Shopee (15%)
                       </Label>
                     </div>
@@ -316,36 +314,36 @@ export default function Home() {
                         checked={mkpMl}
                         onCheckedChange={(checked) => setMkpMl(checked as boolean)}
                       />
-                      <Label htmlFor="ml" className="cursor-pointer">
+                      <Label htmlFor="ml" className="cursor-pointer text-sm">
                         Mercado Livre (17%)
                       </Label>
                     </div>
 
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2 col-span-2">
                       <Checkbox
                         id="frete"
                         checked={chkFrete}
                         onCheckedChange={(checked) => setChkFrete(checked as boolean)}
                       />
-                      <Label htmlFor="frete" className="cursor-pointer">
+                      <Label htmlFor="frete" className="cursor-pointer text-sm">
                         Incluir Frete
                       </Label>
                     </div>
-
-                    {chkFrete && (
-                      <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                        <Label htmlFor="v-frete-modal">Valor Frete (R$)</Label>
-                        <Input
-                          id="v-frete-modal"
-                          type="number"
-                          step="0.01"
-                          value={vFrete || ""}
-                          onChange={(e) => setVFrete(e.target.value ? parseFloat(e.target.value) : 0)}
-                          className="mt-1"
-                        />
-                      </div>
-                    )}
                   </div>
+
+                  {chkFrete && (
+                    <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                      <Label htmlFor="v-frete-modal">Valor Frete (R$)</Label>
+                      <Input
+                        id="v-frete-modal"
+                        type="number"
+                        step="0.01"
+                        value={vFrete || ""}
+                        onChange={(e) => setVFrete(e.target.value ? parseFloat(e.target.value) : 0)}
+                        className="mt-1"
+                      />
+                    </div>
+                  )}
 
                   <div className="pt-4 border-t">
                     <Label htmlFor="desc-kit">Desconto Kit (%): {descKit}%</Label>
@@ -452,37 +450,34 @@ export default function Home() {
               </Card>
             </div>
 
-            {/* Botão Calcular */}
             <div className="flex justify-center">
               <Button
                 onClick={handleCalcular}
-                size="lg"
-                className="bg-orange-500 hover:bg-orange-600 text-white px-12"
+                className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-6 text-lg font-bold rounded-lg"
               >
                 CALCULAR
               </Button>
             </div>
           </TabsContent>
 
-          {/* ABA: CONFIGURAÇÕES */}
-          <TabsContent value="configuracoes" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Coluna 1: Máquina e Estado */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">⚙️ Máquina e Localização</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
+          <TabsContent value="configuracoes">
+            <Card>
+              <CardHeader>
+                <CardTitle>⚙️ Configurações</CardTitle>
+                <CardDescription>Defina os parâmetros padrão da sua operação</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <Label htmlFor="maquina">Máquina</Label>
+                    <Label htmlFor="maquina">Máquina Padrão</Label>
                     <Select value={nomeMaquina} onValueChange={setNomeMaquina}>
                       <SelectTrigger id="maquina" className="mt-1">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {Object.keys(maquinasBrasil).map((maq) => (
-                          <SelectItem key={maq} value={maq}>
-                            {maq}
+                        {maquinasBrasil.map((m) => (
+                          <SelectItem key={m.nome} value={m.nome}>
+                            {m.nome}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -490,9 +485,9 @@ export default function Home() {
                   </div>
 
                   <div>
-                    <Label htmlFor="c-maq">Aluguel Máquina (R$/h)</Label>
+                    <Label htmlFor="custo-maq">Custo Máquina (R$/h)</Label>
                     <Input
-                      id="c-maq"
+                      id="custo-maq"
                       type="number"
                       step="0.01"
                       value={cMaq || ""}
@@ -502,29 +497,21 @@ export default function Home() {
                   </div>
 
                   <div>
-                    <Label htmlFor="estado">Seu Estado</Label>
+                    <Label htmlFor="estado">Estado</Label>
                     <Select value={estado} onValueChange={setEstado}>
                       <SelectTrigger id="estado" className="mt-1">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {Object.keys(custoEnergiaKwh).map((est) => (
-                          <SelectItem key={est} value={est}>
-                            {est}
+                        {Object.keys(aliquotasIcms).map((uf) => (
+                          <SelectItem key={uf} value={uf}>
+                            {uf}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
-                </CardContent>
-              </Card>
 
-              {/* Coluna 2: Custos e Margens */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">💵 Custos e Margens</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
                   <div>
                     <Label htmlFor="v-hora">Sua Hora (R$)</Label>
                     <Input
@@ -538,34 +525,19 @@ export default function Home() {
                   </div>
 
                   <div>
-                    <Label htmlFor="v-frete">Valor Frete (R$)</Label>
+                    <Label htmlFor="mult-excl">Multiplicador Exclusivo</Label>
                     <Input
-                      id="v-frete"
+                      id="mult-excl"
                       type="number"
-                      step="0.01"
-                      value={vFrete || ""}
-                      onChange={(e) => setVFrete(e.target.value ? parseFloat(e.target.value) : 0)}
+                      step="0.1"
+                      value={multExcl || ""}
+                      onChange={(e) => setMultExcl(e.target.value ? parseFloat(e.target.value) : 0)}
                       className="mt-1"
                     />
                   </div>
-
-                  <div>
-                    <Label htmlFor="mult-excl">
-                      Multiplicador Exclusividade: {multExcl.toFixed(1)}x
-                    </Label>
-                    <Slider
-                      id="mult-excl"
-                      min={1}
-                      max={30}
-                      step={0.5}
-                      value={[multExcl]}
-                      onValueChange={(value) => setMultExcl(value[0])}
-                      className="mt-2"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
