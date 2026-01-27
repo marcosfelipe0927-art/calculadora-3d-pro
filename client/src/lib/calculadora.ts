@@ -161,14 +161,18 @@ export function calcularPro(params: ParametrosCalculo): ResultadoCalculo {
   let custoBase = cMaterial + cOperacional;
   if (chkRisco) custoBase *= 1.1;
 
-  // 2. Cálculo das Margens (Mínimo, Sugerido, Premium)
+  // 2. Aplicar desconto de lote ANTES de impostos e taxas
+  const fatorDesc = qtdKit > 1 ? 1 - descKit / 100 : 1.0;
+  const custoBaseComDesc = custoBase * fatorDesc;
+
+  // 3. Cálculo das Margens (Mínimo, Sugerido, Premium)
   const margens = exclusivo
     ? [multExcl, multExcl * 1.3, multExcl * 1.6]
     : [2.5, 3.5, 5.0];
 
-  const vBase = margens.map((m) => custoBase * m);
+  const vBase = margens.map((m) => custoBaseComDesc * m);
 
-  // 3. Markup de Taxas e Impostos
+  // 4. Markup de Taxas e Impostos
   const pIcms = (aliquotasIcms[estado] || 18) / 100;
   const pIss = 0.05;
   const taxas =
@@ -177,10 +181,10 @@ export function calcularPro(params: ParametrosCalculo): ResultadoCalculo {
     (chkIcms ? pIcms : 0) +
     (chkIss ? pIss : 0);
 
-  // 4. Custo unitário de trabalho (acabamento por unidade)
+  // 5. Custo unitário de trabalho (acabamento por unidade)
   const custoTrabalhoUnitario = tPosTotal * vHora;
 
-  // 5. Processamento Final (Taxas -> Arredondamento -> Adicionar acabamento e frete)
+  // 6. Processamento Final (Taxas -> Arredondamento -> Adicionar acabamento e frete)
   const vFinais: number[] = [];
   for (const v of vBase) {
     const vComTaxa = taxas < 1 ? v / (1 - taxas) : v;
@@ -190,15 +194,14 @@ export function calcularPro(params: ParametrosCalculo): ResultadoCalculo {
     vFinais.push(vFinal);
   }
 
-  // 6. Cálculos do Lote (Kit)
+  // 7. Cálculos do Lote (Kit)
   // Para o lote, removemos o frete dos unitários, multiplicamos, e depois adicionamos frete uma única vez
-  const fatorDesc = qtdKit > 1 ? 1 - descKit / 100 : 1.0;
   
   // Preço sem frete para multiplicação
   const vSemFrete = vFinais.map((v) => chkFrete ? v - vFrete : v);
   
-  // Multiplicar pela quantidade e aplicar desconto
-  const kFinais = vSemFrete.map((v) => v * qtdKit * fatorDesc);
+  // Multiplicar pela quantidade (desconto já foi aplicado no custo base)
+  const kFinais = vSemFrete.map((v) => v * qtdKit);
   
   // Adicionar frete apenas uma vez no total do lote
   if (chkFrete) {
