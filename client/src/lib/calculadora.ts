@@ -177,23 +177,20 @@ export function calcularPro(params: ParametrosCalculo): ResultadoCalculo {
     (chkIcms ? pIcms : 0) +
     (chkIss ? pIss : 0);
 
-  // 4. Processamento Final (Taxas -> Arredondamento)
+  // 4. Custo unitario de trabalho (acabamento por unidade)
+  const custoTrabalhoUnitario = tPosTotal * vHora;
+
+  // 5. Processamento Final (Taxas -> Arredondamento -> Adicionar acabamento)
   const vFinais: number[] = [];
   for (const v of vBase) {
     const vComTaxa = taxas < 1 ? v / (1 - taxas) : v;
     const vArredondado = arredondarPsicologico(vComTaxa);
-    vFinais.push(vArredondado);
+    vFinais.push(vArredondado + custoTrabalhoUnitario);
   }
 
-  // 5. Cálculos do Lote (Kit)
+  // 6. Cálculos do Lote (Kit)
   const fatorDesc = qtdKit > 1 ? 1 - descKit / 100 : 1.0;
   const kFinais = vFinais.map((v) => v * qtdKit * fatorDesc);
-
-  // 6. Adicionar custo de trabalho (acabamento) - multiplicado por quantidade e horas
-  const custoTrabalho = tPosTotal * vHora * qtdKit;
-  kFinais[0] += custoTrabalho;
-  kFinais[1] += custoTrabalho;
-  kFinais[2] += custoTrabalho;
 
   // 7. Adicionar frete apenas uma vez no total (não por unidade)
   if (chkFrete) {
