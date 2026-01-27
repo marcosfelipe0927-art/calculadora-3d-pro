@@ -30,7 +30,8 @@ export default function Home() {
   const [peso, setPeso] = useState<number>(17);
   const [precoKg, setPrecoKg] = useState<number>(69.99);
   const [tImp, setTImp] = useState<number>(2.02);
-  const [tPos, setTPos] = useState<number>(0);
+  const [tPosHoras, setTPosHoras] = useState<number>(0);
+  const [tPosMinutos, setTPosMinutos] = useState<number>(0);
   const [qtdKit, setQtdKit] = useState<number>(1);
 
   // Taxas e Impostos
@@ -62,7 +63,8 @@ export default function Home() {
       peso,
       precoKg,
       tImp,
-      tPos,
+      tPosHoras,
+      tPosMinutos,
       exclusivo,
       qtdKit,
       descKit,
@@ -188,16 +190,31 @@ export default function Home() {
                     />
                   </div>
 
-                  <div>
-                    <Label htmlFor="t-pos">Tempo Acabamento (h)</Label>
-                    <Input
-                      id="t-pos"
-                      type="number"
-                      step="0.01"
-                      value={tPos || ""}
-                      onChange={(e) => setTPos(e.target.value ? parseFloat(e.target.value) : 0)}
-                      className="mt-1"
-                    />
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label htmlFor="t-pos-horas">Acabamento - Horas</Label>
+                      <Input
+                        id="t-pos-horas"
+                        type="number"
+                        placeholder="0"
+                        value={tPosHoras || ""}
+                        onChange={(e) => setTPosHoras(e.target.value ? parseFloat(e.target.value) : 0)}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="t-pos-minutos">Minutos</Label>
+                      <Input
+                        id="t-pos-minutos"
+                        type="number"
+                        placeholder="0"
+                        min="0"
+                        max="59"
+                        value={tPosMinutos || ""}
+                        onChange={(e) => setTPosMinutos(e.target.value ? parseFloat(e.target.value) : 0)}
+                        className="mt-1"
+                      />
+                    </div>
                   </div>
 
                   <div>

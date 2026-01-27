@@ -87,7 +87,8 @@ export interface ParametrosCalculo {
   peso: number;
   precoKg: number;
   tImp: number;
-  tPos: number;
+  tPosHoras: number;
+  tPosMinutos: number;
   exclusivo: boolean;
   qtdKit: number;
   descKit: number;
@@ -121,7 +122,8 @@ export function calcularPro(params: ParametrosCalculo): ResultadoCalculo {
     peso,
     precoKg,
     tImp,
-    tPos,
+    tPosHoras,
+    tPosMinutos,
     exclusivo,
     qtdKit,
     descKit,
@@ -140,7 +142,10 @@ export function calcularPro(params: ParametrosCalculo): ResultadoCalculo {
     nomeCliente,
   } = params;
 
-  // 1. Custos de Produção
+  // Converter tempo de acabamento para horas decimais
+  const tPosTotal = tPosHoras + tPosMinutos / 60;
+
+  // 1. Custos de Produção (sem incluir trabalho de acabamento)
   const valorKwh = custoEnergiaKwh[estado] || 0.72;
   const fatorCons = maquinasBrasil[nomeMaquina]?.[1] || 1.0;
   const multMat: Record<string, number> = {
@@ -152,12 +157,11 @@ export function calcularPro(params: ParametrosCalculo): ResultadoCalculo {
 
   const cMaterial = (precoKg / 1000) * peso;
   const cOperacional = (eReal + cMaq) * tImp;
-  const cTrabalho = tPos * vHora;
 
-  let custoBase = cMaterial + cOperacional + cTrabalho;
+  let custoBase = cMaterial + cOperacional;
   if (chkRisco) custoBase *= 1.1;
 
-  // 2. Cálculo das Margens (Mínimo, Sugerido, Premium)
+  // 2. Cálculo das Margens (Mínimo, Sugerido, Premium) - SEM trabalho de acabamento
   const margens = exclusivo
     ? [multExcl, multExcl * 1.3, multExcl * 1.6]
     : [2.5, 3.5, 5.0];
@@ -184,8 +188,14 @@ export function calcularPro(params: ParametrosCalculo): ResultadoCalculo {
   // 5. Cálculos do Lote (Kit)
   const fatorDesc = qtdKit > 1 ? 1 - descKit / 100 : 1.0;
   const kFinais = vFinais.map((v) => v * qtdKit * fatorDesc);
-  
-  // 6. Adicionar frete apenas uma vez no total (não por unidade)
+
+  // 6. Adicionar custo de trabalho (acabamento) - multiplicado por quantidade e horas
+  const custoTrabalho = tPosTotal * vHora * qtdKit;
+  kFinais[0] += custoTrabalho;
+  kFinais[1] += custoTrabalho;
+  kFinais[2] += custoTrabalho;
+
+  // 7. Adicionar frete apenas uma vez no total (não por unidade)
   if (chkFrete) {
     kFinais[0] += vFrete;
     kFinais[1] += vFrete;
