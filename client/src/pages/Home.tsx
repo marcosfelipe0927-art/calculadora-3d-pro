@@ -156,41 +156,43 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <div>
-                    <Label htmlFor="material">Material</Label>
-                    <Select value={material} onValueChange={setMaterial}>
-                      <SelectTrigger id="material" className="mt-1">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="PLA">PLA</SelectItem>
-                        <SelectItem value="PETG">PETG</SelectItem>
-                        <SelectItem value="ABS">ABS</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <Label htmlFor="material">Material</Label>
+                      <Select value={material} onValueChange={setMaterial}>
+                        <SelectTrigger id="material" className="mt-1">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="PLA">PLA</SelectItem>
+                          <SelectItem value="PETG">PETG</SelectItem>
+                          <SelectItem value="ABS">ABS</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                  <div>
-                    <Label htmlFor="peso">Peso (g)</Label>
-                    <Input
-                      id="peso"
-                      type="number"
-                      value={peso || ""}
-                      onChange={(e) => setPeso(e.target.value ? parseFloat(e.target.value) : 0)}
-                      className="mt-1"
-                    />
-                  </div>
+                    <div>
+                      <Label htmlFor="peso">Peso (g)</Label>
+                      <Input
+                        id="peso"
+                        type="number"
+                        value={peso || ""}
+                        onChange={(e) => setPeso(e.target.value ? parseFloat(e.target.value) : 0)}
+                        className="mt-1"
+                      />
+                    </div>
 
-                  <div>
-                    <Label htmlFor="preco-kg">Preço KG (R$)</Label>
-                    <Input
-                      id="preco-kg"
-                      type="number"
-                      step="0.01"
-                      value={precoKg || ""}
-                      onChange={(e) => setPrecoKg(e.target.value ? parseFloat(e.target.value) : 0)}
-                      className="mt-1"
-                    />
+                    <div>
+                      <Label htmlFor="preco-kg">Preço KG (R$)</Label>
+                      <Input
+                        id="preco-kg"
+                        type="number"
+                        step="0.01"
+                        value={precoKg || ""}
+                        onChange={(e) => setPrecoKg(e.target.value ? parseFloat(e.target.value) : 0)}
+                        className="mt-1"
+                      />
+                    </div>
                   </div>
 
                   <div>
