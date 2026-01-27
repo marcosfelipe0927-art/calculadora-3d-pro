@@ -475,9 +475,9 @@ export default function Home() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {maquinasBrasil.map((m) => (
-                          <SelectItem key={m.nome} value={m.nome}>
-                            {m.nome}
+                        {Object.entries(maquinasBrasil).map(([nome]) => (
+                          <SelectItem key={nome} value={nome}>
+                            {nome}
                           </SelectItem>
                         ))}
                       </SelectContent>
