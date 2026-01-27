@@ -397,14 +397,14 @@ export default function Home() {
                   {resUn && (
                     <>
                       <div>
-                        <Label className="text-sm text-gray-600">Preço Unitário</Label>
+                        <Label className="text-sm text-gray-600" style={{color: '#ffffff'}}>Preço Unitário</Label>
                         <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
                           <p className="text-sm font-mono text-blue-900">{resUn}</p>
                           <Button
                             size="sm"
                             variant="ghost"
                             onClick={() => copyToClipboard(resUn)}
-                            className="mt-2 w-full"
+                            className="mt-2 w-full" style={{color: '#f54900'}}
                           >
                             <Copy className="w-4 h-4 mr-2" />
                             Copiar
@@ -414,14 +414,14 @@ export default function Home() {
 
                       {qtdKit > 1 && (
                         <div>
-                          <Label className="text-sm text-gray-600">Preço Total (Lote)</Label>
+                          <Label className="text-sm text-gray-600" style={{color: '#ffffff'}}>Preço Total (Lote)</Label>
                           <div className="mt-2 p-3 bg-green-50 rounded-lg border border-green-200">
                             <p className="text-sm font-mono text-green-900">{resKit}</p>
                             <Button
                               size="sm"
                               variant="ghost"
                               onClick={() => copyToClipboard(resKit)}
-                              className="mt-2 w-full"
+                              className="mt-2 w-full" style={{color: '#f54900'}}
                             >
                               <Copy className="w-4 h-4 mr-2" />
                               Copiar
@@ -431,14 +431,14 @@ export default function Home() {
                       )}
 
                       <div>
-                        <Label className="text-sm text-gray-600">Custos Totais</Label>
+                        <Label className="text-sm text-gray-600" style={{color: '#ffffff'}}>Custos Totais</Label>
                         <div className="mt-2 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
                           <p className="text-sm font-mono text-yellow-900">{resCustoTotal}</p>
                           <Button
                             size="sm"
                             variant="ghost"
                             onClick={() => copyToClipboard(resCustoTotal)}
-                            className="mt-2 w-full"
+                            className="mt-2 w-full" style={{color: '#f54900'}}
                           >
                             <Copy className="w-4 h-4 mr-2" />
                             Copiar
@@ -447,7 +447,7 @@ export default function Home() {
                       </div>
 
                       <div>
-                        <Label className="text-sm text-gray-600">WhatsApp</Label>
+                        <Label className="text-sm text-gray-600" style={{color: '#ffffff'}}>WhatsApp</Label>
                         <div className="mt-2 p-3 bg-purple-50 rounded-lg border border-purple-200">
                           <p className="text-xs font-mono text-purple-900 whitespace-pre-wrap">
                             {resZap}
@@ -456,7 +456,7 @@ export default function Home() {
                             size="sm"
                             variant="ghost"
                             onClick={() => copyToClipboard(resZap)}
-                            className="mt-2 w-full"
+                            className="mt-2 w-full" style={{color: '#f44900'}}
                           >
                             <Copy className="w-4 h-4 mr-2" />
                             Copiar
