@@ -28,9 +28,10 @@ export default function Home() {
   const [nomeCliente, setNomeCliente] = useState("");
   const [nomePeca, setNomePeca] = useState("");
   const [material, setMaterial] = useState("PLA");
-  const [peso, setPeso] = useState<number>(17);
+  const [peso, setPeso] = useState<number>(0);
   const [precoKg, setPrecoKg] = useState<number>(69.99);
-  const [tImp, setTImp] = useState<number>(2.02);
+  const [tImp, setTImp] = useState<number>(0);
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
   const [tPosHoras, setTPosHoras] = useState<number>(0);
   const [tPosMinutos, setTPosMinutos] = useState<number>(0);
   const [qtdKit, setQtdKit] = useState<number>(1);
@@ -109,23 +110,37 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 p-4">
+    <div className={`min-h-screen transition-colors duration-300 ${
+      isDarkMode
+        ? 'bg-gradient-to-br from-slate-900 to-slate-800'
+        : 'bg-gradient-to-br from-orange-50 to-orange-100'
+    } p-4`}>
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-orange-900">🚀 Calculadora 3D PRO</h1>
+          <h1 className={`text-4xl font-bold ${isDarkMode ? 'text-orange-400' : 'text-orange-900'}`}>🚀 Calculadora 3D PRO</h1>
         </div>
 
         <Tabs defaultValue="calculadora" className="w-full">
-          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
-            <TabsTrigger value="calculadora">📊 Calculadora</TabsTrigger>
-            <TabsTrigger value="configuracoes">⚙️ Configurações</TabsTrigger>
-          </TabsList>
+          <div className="flex justify-center items-center gap-4 mb-8">
+            <TabsList className="grid grid-cols-2">
+              <TabsTrigger value="calculadora">📊 Calculadora</TabsTrigger>
+              <TabsTrigger value="configuracoes">⚙️ Configurações</TabsTrigger>
+            </TabsList>
+            <Button
+              onClick={() => setIsDarkMode(!isDarkMode)}
+              variant="outline"
+              size="icon"
+              className={isDarkMode ? 'bg-slate-700 border-slate-600' : ''}
+            >
+              {isDarkMode ? '☀️' : '🌙'}
+            </Button>
+          </div>
 
           <TabsContent value="calculadora">
             {/* Mobile: Dados da Peça */}
             <div className="lg:hidden mb-6">
-              <Card>
+              <Card className={isDarkMode ? 'bg-slate-800 border-slate-700' : ''}>
                 <CardHeader>
                   <CardTitle className="text-lg">📦 Dados da Peça</CardTitle>
                 </CardHeader>
@@ -248,7 +263,7 @@ export default function Home() {
 
             {/* Mobile: Taxas e Impostos */}
             <div className="lg:hidden mb-6">
-              <Card>
+              <Card className={isDarkMode ? 'bg-slate-800 border-slate-700' : ''}>
                 <CardHeader>
                   <CardTitle className="text-lg">🛒 Taxas e Impostos</CardTitle>
                 </CardHeader>
@@ -374,7 +389,7 @@ export default function Home() {
 
             {/* Mobile: Resultados */}
             <div className="lg:hidden mb-6">
-              <Card>
+              <Card className={isDarkMode ? 'bg-slate-800 border-slate-700' : ''}>
                 <CardHeader>
                   <CardTitle className="text-lg">💰 Resultados</CardTitle>
                 </CardHeader>
@@ -466,7 +481,7 @@ export default function Home() {
             {/* Desktop: 3 colunas lado a lado */}
             <div className="hidden lg:grid grid-cols-3 gap-6 mb-6" id="cards-container">
               {/* Coluna 1: Dados da Peça */}
-              <Card>
+              <Card className={isDarkMode ? 'bg-slate-800 border-slate-700' : ''}>
                 <CardHeader>
                   <CardTitle className="text-lg">📦 Dados da Peça</CardTitle>
                 </CardHeader>
@@ -587,7 +602,7 @@ export default function Home() {
               </Card>
 
               {/* Coluna 2: Taxas e Impostos */}
-              <Card>
+              <Card className={isDarkMode ? 'bg-slate-800 border-slate-700' : ''}>
                 <CardHeader>
                   <CardTitle className="text-lg">🛒 Taxas e Impostos</CardTitle>
                 </CardHeader>
@@ -701,7 +716,7 @@ export default function Home() {
               </Card>
 
               {/* Coluna 3: Resultados */}
-              <Card>
+              <Card className={isDarkMode ? 'bg-slate-800 border-slate-700' : ''}>
                 <CardHeader>
                   <CardTitle className="text-lg">💰 Resultados</CardTitle>
                 </CardHeader>
