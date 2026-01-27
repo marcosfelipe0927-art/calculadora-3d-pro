@@ -12,7 +12,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Copy, Download, Share2, Clock } from "lucide-react";
+import { Copy, Download, Share2, Clock, Lock } from "lucide-react";
 import { toast } from "sonner";
 import {
   calcularPro,
@@ -21,9 +21,23 @@ import {
   aliquotasIcms,
   type ParametrosCalculo,
 } from "@/lib/calculadora";
+import {
+  generateFingerprint,
+  isTokenValid,
+  saveAuthToLocalStorage,
+  getTokenFromLocalStorage,
+  getFingerprintFromLocalStorage,
+  isSameDevice,
+  clearAuthFromLocalStorage,
+} from "@/lib/auth";
 import { useState, useEffect } from "react";
 
 export default function Home() {
+  // Estado de Autenticação
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [tokenInput, setTokenInput] = useState<string>("");
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
+
   // Estado da Calculadora
   const [nomeCliente, setNomeCliente] = useState("");
   const [nomePeca, setNomePeca] = useState("");
@@ -31,7 +45,6 @@ export default function Home() {
   const [peso, setPeso] = useState<number>(0);
   const [precoKg, setPrecoKg] = useState<number>(69.99);
   const [tImp, setTImp] = useState<number>(0);
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
   const [tPosHoras, setTPosHoras] = useState<number>(0);
   const [tPosMinutos, setTPosMinutos] = useState<number>(0);
   const [qtdKit, setQtdKit] = useState<number>(1);
@@ -59,8 +72,31 @@ export default function Home() {
   const [resZap, setResZap] = useState<string>("");
   const [resCustoTotal, setResCustoTotal] = useState<string>("");
   const [historico, setHistorico] = useState<any[]>([]);
+  const [buscaHistorico, setBuscaHistorico] = useState<string>("");
 
   useEffect(() => {
+    // Verificar autenticacao no carregamento
+    const savedToken = getTokenFromLocalStorage();
+    const savedFingerprint = getFingerprintFromLocalStorage();
+    const currentFingerprint = generateFingerprint();
+
+    if (savedToken) {
+      const validacao = isTokenValid(savedToken);
+      if (validacao.valido) {
+        if (savedFingerprint && isSameDevice(savedFingerprint, currentFingerprint)) {
+          setIsAuthenticated(true);
+        } else if (!savedFingerprint) {
+          setIsAuthenticated(true);
+        } else {
+          toast.error("Este token ja esta em uso em outro dispositivo");
+          clearAuthFromLocalStorage();
+        }
+      } else {
+        toast.error(validacao.motivo || "Token invalido");
+        clearAuthFromLocalStorage();
+      }
+    }
+
     const savedConfig = localStorage.getItem('calculadora_config');
     const savedHistorico = localStorage.getItem('calculadora_historico');
     
@@ -86,6 +122,47 @@ export default function Home() {
       setHistorico(JSON.parse(savedHistorico));
     }
   }, []);
+
+  const handleTokenLogin = () => {
+    if (!tokenInput.trim()) {
+      toast.error("Digite um token valido");
+      return;
+    }
+
+    const validacao = isTokenValid(tokenInput);
+    if (!validacao.valido) {
+      toast.error(validacao.motivo || "Token invalido");
+      return;
+    }
+
+    const currentFingerprint = generateFingerprint();
+    const savedFingerprint = getFingerprintFromLocalStorage();
+    const savedToken = getTokenFromLocalStorage();
+
+    // Se ja existe um token salvo e nao eh o mesmo
+    if (savedToken && savedToken !== tokenInput) {
+      toast.error("Outro token ja esta em uso neste dispositivo");
+      return;
+    }
+
+    // Se ja existe um fingerprint salvo e nao corresponde
+    if (savedFingerprint && !isSameDevice(savedFingerprint, currentFingerprint)) {
+      toast.error("Este token ja esta em uso em outro dispositivo");
+      return;
+    }
+
+    saveAuthToLocalStorage(tokenInput, currentFingerprint);
+    setIsAuthenticated(true);
+    setTokenInput("");
+    toast.success("Acesso concedido!");
+  };
+
+  const handleLogout = () => {
+    clearAuthFromLocalStorage();
+    setIsAuthenticated(false);
+    setTokenInput("");
+    toast.success("Desconectado com sucesso");
+  };
 
   const handleCalcular = () => {
     const params: ParametrosCalculo = {
@@ -145,7 +222,28 @@ export default function Home() {
       descKit,
     };
     localStorage.setItem('calculadora_config', JSON.stringify(config));
-    toast.success('Configurações salvas!');
+    toast.success('Configuracoes salvas!');
+  };
+
+  const reorcarItem = (item: any) => {
+    setNomeCliente(item.cliente === 'Cliente' ? '' : item.cliente);
+    setNomePeca(item.peca === 'Peca' ? '' : item.peca);
+    setMaterial(item.material || 'PLA');
+    setPeso(item.peso || 0);
+    setPrecoKg(item.precoKg || 69.99);
+    setTImp(item.tImp || 0);
+    setTPosHoras(item.tPosHoras || 0);
+    setTPosMinutos(item.tPosMinutos || 0);
+    setQtdKit(item.qtdKit || 1);
+    setChkIcms(item.chkIcms || false);
+    setChkIss(item.chkIss || false);
+    setChkRisco(item.chkRisco !== undefined ? item.chkRisco : true);
+    setExclusivo(item.exclusivo || false);
+    setMkpShopee(item.mkpShopee || false);
+    setMkpMl(item.mkpMl || false);
+    setChkFrete(item.chkFrete || false);
+    setDescKit(item.descKit || 10);
+    toast.success('Dados carregados! Clique em CALCULAR para atualizar.');
   };
 
   const addToHistorico = () => {
@@ -153,14 +251,28 @@ export default function Home() {
       id: Date.now(),
       data: new Date().toLocaleString('pt-BR'),
       cliente: nomeCliente || 'Cliente',
-      peca: nomePeca || 'Peça',
+      peca: nomePeca || 'Peca',
       precoUnitario: resUn,
       precoLote: resKit,
       quantidade: qtdKit,
       custos: resCustoTotal,
       whatsapp: resZap,
+      material,
+      peso,
+      precoKg,
+      tImp,
+      tPosHoras,
+      tPosMinutos,
+      chkIcms,
+      chkIss,
+      chkRisco,
+      exclusivo,
+      mkpShopee,
+      mkpMl,
+      chkFrete,
+      descKit,
     };
-    const novoHistorico = [novoItem, ...historico].slice(0, 10);
+    const novoHistorico = [novoItem, ...historico].slice(0, 200);
     setHistorico(novoHistorico);
     localStorage.setItem('calculadora_historico', JSON.stringify(novoHistorico));
   };
@@ -185,6 +297,47 @@ export default function Home() {
     URL.revokeObjectURL(url);
   };
 
+  // Tela de Login
+  if (!isAuthenticated) {
+    return (
+      <div className={`min-h-screen transition-colors duration-300 flex items-center justify-center ${
+        isDarkMode
+          ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900'
+          : 'bg-gradient-to-br from-orange-50 to-orange-100'
+      } p-4`}>
+        <Card className={`w-full max-w-md ${isDarkMode ? 'bg-gray-800 border-gray-700' : ''}`}>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Lock className="w-5 h-5" />
+              Acesso Restrito
+            </CardTitle>
+            <CardDescription>Digite seu token de acesso</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="token" className={isDarkMode ? 'text-white' : ''}>Token de Acesso</Label>
+              <Input
+                id="token"
+                type="password"
+                placeholder="Digite seu token"
+                value={tokenInput}
+                onChange={(e) => setTokenInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleTokenLogin()}
+                className={`mt-1 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : ''}`}
+              />
+            </div>
+            <Button
+              onClick={handleTokenLogin}
+              className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+            >
+              Acessar
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className={`min-h-screen transition-colors duration-300 ${
       isDarkMode
@@ -193,8 +346,16 @@ export default function Home() {
     } p-4`}>
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 flex justify-between items-center">
           <h1 className={`text-4xl font-bold ${isDarkMode ? 'text-white' : 'text-orange-900'}`}>🚀 Calculadora 3D PRO</h1>
+          <Button
+            onClick={handleLogout}
+            variant="outline"
+            size="sm"
+            className={isDarkMode ? 'bg-gray-800 border-gray-700 text-white hover:bg-gray-700' : ''}
+          >
+            Sair
+          </Button>
         </div>
 
         <Tabs defaultValue="calculadora" className="w-full">
@@ -999,15 +1160,26 @@ export default function Home() {
           <TabsContent value="historico">
             <Card>
               <CardHeader>
-                <CardTitle>⏱️ Histórico de Orçamentos</CardTitle>
-                <CardDescription>Últimos 10 orçamentos calculados</CardDescription>
+                <CardTitle>⚡️ Histórico de Orçamentos</CardTitle>
+                <CardDescription>Todos os orçamentos calculados</CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-4">
+                <Input
+                  placeholder="Buscar por cliente ou peca..."
+                  value={buscaHistorico}
+                  onChange={(e) => setBuscaHistorico(e.target.value)}
+                  className={isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : ''}
+                />
                 {historico.length === 0 ? (
                   <p className="text-gray-500 text-center py-8">Nenhum orçamento calculado ainda</p>
                 ) : (
                   <div className="space-y-3">
-                    {historico.map((item) => (
+                    {historico
+                      .filter((item) =>
+                        item.cliente.toLowerCase().includes(buscaHistorico.toLowerCase()) ||
+                        item.peca.toLowerCase().includes(buscaHistorico.toLowerCase())
+                      )
+                      .map((item) => (
                       <div
                         key={item.id}
                         className={`p-4 rounded-lg border ${
@@ -1034,13 +1206,24 @@ export default function Home() {
                               Unitário: {item.precoUnitario} | Lote: {item.precoLote || '-'} | Qtd: {item.quantidade}
                             </p>
                           </div>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => copyToClipboard(item.whatsapp)}
-                          >
-                            <Copy className="w-4 h-4" />
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => reorcarItem(item)}
+                              className={isDarkMode ? 'text-orange-400 hover:text-orange-300' : ''}
+                              title="Reorcar este item"
+                            >
+                              Reorcar
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => copyToClipboard(item.whatsapp)}
+                            >
+                              <Copy className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     ))}
