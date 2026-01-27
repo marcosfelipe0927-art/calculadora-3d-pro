@@ -162,7 +162,7 @@ export function calcularPro(params: ParametrosCalculo): ResultadoCalculo {
   if (chkRisco) custoBase *= 1.1;
 
   // 2. Aplicar desconto de lote ANTES de impostos e taxas
-  const fatorDesc = descKit > 0 ? 1 - descKit / 100 : 1.0;
+  const fatorDesc = qtdKit > 1 ? 1 - descKit / 100 : 1.0;
   const custoBaseComDesc = custoBase * fatorDesc;
 
   // 3. Cálculo das Margens (Mínimo, Sugerido, Premium)
