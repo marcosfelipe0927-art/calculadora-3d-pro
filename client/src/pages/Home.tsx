@@ -112,13 +112,13 @@ export default function Home() {
   return (
     <div className={`min-h-screen transition-colors duration-300 ${
       isDarkMode
-        ? 'bg-gradient-to-br from-slate-900 to-slate-800'
+        ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900'
         : 'bg-gradient-to-br from-orange-50 to-orange-100'
     } p-4`}>
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className={`text-4xl font-bold ${isDarkMode ? 'text-orange-400' : 'text-orange-900'}`}>🚀 Calculadora 3D PRO</h1>
+          <h1 className={`text-4xl font-bold ${isDarkMode ? 'text-white' : 'text-orange-900'}`}>🚀 Calculadora 3D PRO</h1>
         </div>
 
         <Tabs defaultValue="calculadora" className="w-full">
@@ -131,7 +131,7 @@ export default function Home() {
               onClick={() => setIsDarkMode(!isDarkMode)}
               variant="outline"
               size="icon"
-              className={isDarkMode ? 'bg-slate-700 border-slate-600' : ''}
+              className={isDarkMode ? 'bg-gray-700 border-gray-600 text-white hover:bg-gray-600' : ''}
             >
               {isDarkMode ? '☀️' : '🌙'}
             </Button>
@@ -140,14 +140,14 @@ export default function Home() {
           <TabsContent value="calculadora">
             {/* Mobile: Dados da Peça */}
             <div className="lg:hidden mb-6">
-              <Card className={isDarkMode ? 'bg-slate-800 border-slate-700' : ''}>
+              <Card className={isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : ''}>
                 <CardHeader>
                   <CardTitle className="text-lg">📦 Dados da Peça</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <Label htmlFor="cliente">Cliente</Label>
+                      <Label htmlFor="cliente" className={isDarkMode ? 'text-white' : ''}>Cliente</Label>
                       <Input
                         id="cliente"
                         placeholder="Nome"
@@ -157,7 +157,7 @@ export default function Home() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="peca">Peça</Label>
+                      <Label htmlFor="peca" className={isDarkMode ? 'text-white' : ''}>Peça</Label>
                       <Input
                         id="peca"
                         placeholder="Descrição"
@@ -170,7 +170,7 @@ export default function Home() {
 
                   <div className="grid grid-cols-3 gap-2">
                     <div>
-                      <Label htmlFor="material">Material</Label>
+                      <Label htmlFor="material" className={isDarkMode ? 'text-white' : ''}>Material</Label>
                       <Select value={material} onValueChange={setMaterial}>
                         <SelectTrigger id="material" className="mt-1">
                           <SelectValue />
@@ -184,7 +184,7 @@ export default function Home() {
                     </div>
 
                     <div>
-                      <Label htmlFor="peso">Peso (g)</Label>
+                      <Label htmlFor="peso" className={isDarkMode ? 'text-white' : ''}>Peso (g)</Label>
                       <Input
                         id="peso"
                         type="number"
@@ -195,7 +195,7 @@ export default function Home() {
                     </div>
 
                     <div>
-                      <Label htmlFor="preco-kg">Preço KG (R$)</Label>
+                      <Label htmlFor="preco-kg" className={isDarkMode ? 'text-white' : ''}>Preço KG (R$)</Label>
                       <Input
                         id="preco-kg"
                         type="number"
@@ -263,7 +263,7 @@ export default function Home() {
 
             {/* Mobile: Taxas e Impostos */}
             <div className="lg:hidden mb-6">
-              <Card className={isDarkMode ? 'bg-slate-800 border-slate-700' : ''}>
+              <Card className={isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : ''}>
                 <CardHeader>
                   <CardTitle className="text-lg">🛒 Taxas e Impostos</CardTitle>
                 </CardHeader>
@@ -389,7 +389,7 @@ export default function Home() {
 
             {/* Mobile: Resultados */}
             <div className="lg:hidden mb-6">
-              <Card className={isDarkMode ? 'bg-slate-800 border-slate-700' : ''}>
+              <Card className={isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : ''}>
                 <CardHeader>
                   <CardTitle className="text-lg">💰 Resultados</CardTitle>
                 </CardHeader>
@@ -481,14 +481,14 @@ export default function Home() {
             {/* Desktop: 3 colunas lado a lado */}
             <div className="hidden lg:grid grid-cols-3 gap-6 mb-6" id="cards-container">
               {/* Coluna 1: Dados da Peça */}
-              <Card className={isDarkMode ? 'bg-slate-800 border-slate-700' : ''}>
+              <Card className={isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : ''}>
                 <CardHeader>
                   <CardTitle className="text-lg">📦 Dados da Peça</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <Label htmlFor="cliente">Cliente</Label>
+                      <Label htmlFor="cliente" className={isDarkMode ? 'text-white' : ''}>Cliente</Label>
                       <Input
                         id="cliente"
                         placeholder="Nome"
@@ -498,7 +498,7 @@ export default function Home() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="peca">Peça</Label>
+                      <Label htmlFor="peca" className={isDarkMode ? 'text-white' : ''}>Peça</Label>
                       <Input
                         id="peca"
                         placeholder="Descrição"
@@ -511,7 +511,7 @@ export default function Home() {
 
                   <div className="grid grid-cols-3 gap-2">
                     <div>
-                      <Label htmlFor="material">Material</Label>
+                      <Label htmlFor="material" className={isDarkMode ? 'text-white' : ''}>Material</Label>
                       <Select value={material} onValueChange={setMaterial}>
                         <SelectTrigger id="material" className="mt-1">
                           <SelectValue />
@@ -525,7 +525,7 @@ export default function Home() {
                     </div>
 
                     <div>
-                      <Label htmlFor="peso">Peso (g)</Label>
+                      <Label htmlFor="peso" className={isDarkMode ? 'text-white' : ''}>Peso (g)</Label>
                       <Input
                         id="peso"
                         type="number"
@@ -536,7 +536,7 @@ export default function Home() {
                     </div>
 
                     <div>
-                      <Label htmlFor="preco-kg">Preço KG (R$)</Label>
+                      <Label htmlFor="preco-kg" className={isDarkMode ? 'text-white' : ''}>Preço KG (R$)</Label>
                       <Input
                         id="preco-kg"
                         type="number"
@@ -602,7 +602,7 @@ export default function Home() {
               </Card>
 
               {/* Coluna 2: Taxas e Impostos */}
-              <Card className={isDarkMode ? 'bg-slate-800 border-slate-700' : ''}>
+              <Card className={isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : ''}>
                 <CardHeader>
                   <CardTitle className="text-lg">🛒 Taxas e Impostos</CardTitle>
                 </CardHeader>
@@ -716,7 +716,7 @@ export default function Home() {
               </Card>
 
               {/* Coluna 3: Resultados */}
-              <Card className={isDarkMode ? 'bg-slate-800 border-slate-700' : ''}>
+              <Card className={isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : ''}>
                 <CardHeader>
                   <CardTitle className="text-lg">💰 Resultados</CardTitle>
                 </CardHeader>
