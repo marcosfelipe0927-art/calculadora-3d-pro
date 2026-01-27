@@ -12,7 +12,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Copy, Download } from "lucide-react";
+import { Copy, Download, Share2, Clock } from "lucide-react";
 import { toast } from "sonner";
 import {
   calcularPro,
@@ -21,7 +21,7 @@ import {
   aliquotasIcms,
   type ParametrosCalculo,
 } from "@/lib/calculadora";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Home() {
   // Estado da Calculadora
@@ -58,6 +58,34 @@ export default function Home() {
   const [resKit, setResKit] = useState<string>("");
   const [resZap, setResZap] = useState<string>("");
   const [resCustoTotal, setResCustoTotal] = useState<string>("");
+  const [historico, setHistorico] = useState<any[]>([]);
+
+  useEffect(() => {
+    const savedConfig = localStorage.getItem('calculadora_config');
+    const savedHistorico = localStorage.getItem('calculadora_historico');
+    
+    if (savedConfig) {
+      const config = JSON.parse(savedConfig);
+      setNomeMaquina(config.nomeMaquina || 'Bambu Lab A1');
+      setCMaq(config.cMaq || 0.9);
+      setEstado(config.estado || 'SP');
+      setVHora(config.vHora || 40);
+      setVFrete(config.vFrete || 25);
+      setMultExcl(config.multExcl || 4.5);
+      setChkIcms(config.chkIcms || false);
+      setChkIss(config.chkIss || false);
+      setChkRisco(config.chkRisco !== undefined ? config.chkRisco : true);
+      setExclusivo(config.exclusivo || false);
+      setMkpShopee(config.mkpShopee || false);
+      setMkpMl(config.mkpMl || false);
+      setChkFrete(config.chkFrete || false);
+      setDescKit(config.descKit || 10);
+    }
+    
+    if (savedHistorico) {
+      setHistorico(JSON.parse(savedHistorico));
+    }
+  }, []);
 
   const handleCalcular = () => {
     const params: ParametrosCalculo = {
@@ -91,11 +119,59 @@ export default function Home() {
     setResKit(resultado.resKit);
     setResZap(resultado.resZap);
     setResCustoTotal(resultado.resCustoTotal);
+    addToHistorico();
   };
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.success("Copiado para a área de transferência!");
+  };
+
+  const saveConfig = () => {
+    const config = {
+      nomeMaquina,
+      cMaq,
+      estado,
+      vHora,
+      vFrete,
+      multExcl,
+      chkIcms,
+      chkIss,
+      chkRisco,
+      exclusivo,
+      mkpShopee,
+      mkpMl,
+      chkFrete,
+      descKit,
+    };
+    localStorage.setItem('calculadora_config', JSON.stringify(config));
+    toast.success('Configurações salvas!');
+  };
+
+  const addToHistorico = () => {
+    const novoItem = {
+      id: Date.now(),
+      data: new Date().toLocaleString('pt-BR'),
+      cliente: nomeCliente || 'Cliente',
+      peca: nomePeca || 'Peça',
+      precoUnitario: resUn,
+      precoLote: resKit,
+      quantidade: qtdKit,
+      custos: resCustoTotal,
+      whatsapp: resZap,
+    };
+    const novoHistorico = [novoItem, ...historico].slice(0, 10);
+    setHistorico(novoHistorico);
+    localStorage.setItem('calculadora_historico', JSON.stringify(novoHistorico));
+  };
+
+  const shareWhatsApp = () => {
+    if (!resZap) {
+      toast.error('Calcule primeiro!');
+      return;
+    }
+    const texto = encodeURIComponent(resZap);
+    window.open(`https://wa.me/?text=${texto}`, '_blank');
   };
 
   const downloadOrcamento = () => {
@@ -123,9 +199,10 @@ export default function Home() {
 
         <Tabs defaultValue="calculadora" className="w-full">
           <div className="flex justify-center items-center gap-4 mb-8">
-            <TabsList className="grid grid-cols-2">
-              <TabsTrigger value="calculadora">📊 Calculadora</TabsTrigger>
-              <TabsTrigger value="configuracoes">⚙️ Configurações</TabsTrigger>
+            <TabsList className="grid grid-cols-3">
+              <TabsTrigger value="calculadora">📊 Calcular</TabsTrigger>
+              <TabsTrigger value="configuracoes">⚙️ Ajustes</TabsTrigger>
+              <TabsTrigger value="historico">⏱️ Histórico</TabsTrigger>
             </TabsList>
             <Button
               onClick={() => setIsDarkMode(!isDarkMode)}
@@ -464,14 +541,23 @@ export default function Home() {
                         </div>
                       </div>
 
-                      <Button
-                        onClick={downloadOrcamento}
-                        variant="outline"
-                        className="w-full"
-                      >
-                        <Download className="w-4 h-4 mr-2" />
-                        Baixar Orçamento
-                      </Button>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          onClick={shareWhatsApp}
+                          className="w-full bg-green-500 hover:bg-green-600 text-white"
+                        >
+                          <Share2 className="w-4 h-4 mr-2" />
+                          WhatsApp
+                        </Button>
+                        <Button
+                          onClick={downloadOrcamento}
+                          variant="outline"
+                          className="w-full"
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          Baixar
+                        </Button>
+                      </div>
                     </>
                   )}
                 </CardContent>
@@ -791,14 +877,23 @@ export default function Home() {
                         </div>
                       </div>
 
-                      <Button
-                        onClick={downloadOrcamento}
-                        variant="outline"
-                        className="w-full"
-                      >
-                        <Download className="w-4 h-4 mr-2" />
-                        Baixar Orçamento
-                      </Button>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          onClick={shareWhatsApp}
+                          className="w-full bg-green-500 hover:bg-green-600 text-white"
+                        >
+                          <Share2 className="w-4 h-4 mr-2" />
+                          WhatsApp
+                        </Button>
+                        <Button
+                          onClick={downloadOrcamento}
+                          variant="outline"
+                          className="w-full"
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          Baixar
+                        </Button>
+                      </div>
                     </>
                   )}
                 </CardContent>
@@ -891,6 +986,66 @@ export default function Home() {
                     />
                   </div>
                 </div>
+                <Button
+                  onClick={saveConfig}
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white mt-4"
+                >
+                  Salvar Configurações
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="historico">
+            <Card>
+              <CardHeader>
+                <CardTitle>⏱️ Histórico de Orçamentos</CardTitle>
+                <CardDescription>Últimos 10 orçamentos calculados</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {historico.length === 0 ? (
+                  <p className="text-gray-500 text-center py-8">Nenhum orçamento calculado ainda</p>
+                ) : (
+                  <div className="space-y-3">
+                    {historico.map((item) => (
+                      <div
+                        key={item.id}
+                        className={`p-4 rounded-lg border ${
+                          isDarkMode
+                            ? 'bg-gray-700 border-gray-600'
+                            : 'bg-gray-50 border-gray-200'
+                        }`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className={`font-semibold ${
+                              isDarkMode ? 'text-white' : 'text-gray-900'
+                            }`}>
+                              {item.cliente} - {item.peca}
+                            </p>
+                            <p className={`text-sm ${
+                              isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                            }`}>
+                              {item.data}
+                            </p>
+                            <p className={`text-sm mt-2 ${
+                              isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                            }`}>
+                              Unitário: {item.precoUnitario} | Lote: {item.precoLote || '-'} | Qtd: {item.quantidade}
+                            </p>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => copyToClipboard(item.whatsapp)}
+                          >
+                            <Copy className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
