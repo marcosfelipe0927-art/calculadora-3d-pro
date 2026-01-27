@@ -113,8 +113,7 @@ export default function Home() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-orange-900 mb-2">🚀 Calculadora 3D PRO</h1>
-          <p className="text-orange-700">Calcule custos e preços para impressão 3D com precisão</p>
+          <h1 className="text-4xl font-bold text-orange-900">🚀 Calculadora 3D PRO</h1>
         </div>
 
         <Tabs defaultValue="calculadora" className="w-full">
@@ -124,7 +123,7 @@ export default function Home() {
           </TabsList>
 
           <TabsContent value="calculadora">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6" id="cards-container">
               {/* Coluna 1: Dados da Peça */}
               <Card>
                 <CardHeader>
@@ -450,10 +449,19 @@ export default function Home() {
               </Card>
             </div>
 
-            <div className="flex justify-center">
+            <div className="hidden lg:flex justify-center">
               <Button
                 onClick={handleCalcular}
                 className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-6 text-lg font-bold rounded-lg"
+              >
+                CALCULAR
+              </Button>
+            </div>
+            
+            <div className="lg:hidden flex justify-center mt-6">
+              <Button
+                onClick={handleCalcular}
+                className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-6 text-lg font-bold rounded-lg w-full"
               >
                 CALCULAR
               </Button>
