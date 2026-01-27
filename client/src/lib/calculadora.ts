@@ -248,8 +248,9 @@ export function calcularPro(params: ParametrosCalculo): ResultadoCalculo {
   if (chkFrete) custoTotal += vFrete;
   
   // Formatação para exibição
-  const labelUnidade = qtdKit === 1 ? "Unidade" : "Unidades";
-  const resCustoTotal = `${labelUnidade}: R$ ${custoUnitario.toFixed(2)}${qtdKit > 1 ? ` | ${labelUnidade}s: R$ ${custoTotal.toFixed(2)}` : ""}`;
+  const resCustoTotal = qtdKit === 1 
+    ? `Unidade: R$ ${custoUnitario.toFixed(2)}`
+    : `Unidade: R$ ${custoUnitario.toFixed(2)} | Lote: R$ ${custoTotal.toFixed(2)}`;
 
   // Texto WhatsApp (Usa o valor Sugerido como padrão)
   const dataE = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
