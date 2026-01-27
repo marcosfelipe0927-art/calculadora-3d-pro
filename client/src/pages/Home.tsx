@@ -383,21 +383,23 @@ export default function Home() {
                         </div>
                       </div>
 
-                      <div>
-                        <Label className="text-sm text-gray-600">Preço Total (Lote)</Label>
-                        <div className="mt-2 p-3 bg-green-50 rounded-lg border border-green-200">
-                          <p className="text-sm font-mono text-green-900">{resKit}</p>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => copyToClipboard(resKit)}
-                            className="mt-2 w-full"
-                          >
-                            <Copy className="w-4 h-4 mr-2" />
-                            Copiar
-                          </Button>
+                      {qtdKit > 1 && (
+                        <div>
+                          <Label className="text-sm text-gray-600">Preço Total (Lote)</Label>
+                          <div className="mt-2 p-3 bg-green-50 rounded-lg border border-green-200">
+                            <p className="text-sm font-mono text-green-900">{resKit}</p>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => copyToClipboard(resKit)}
+                              className="mt-2 w-full"
+                            >
+                              <Copy className="w-4 h-4 mr-2" />
+                              Copiar
+                            </Button>
+                          </div>
                         </div>
-                      </div>
+                      )}
 
                       <div>
                         <Label className="text-sm text-gray-600">Custos Totais</Label>
