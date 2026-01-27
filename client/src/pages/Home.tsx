@@ -296,6 +296,20 @@ export default function Home() {
                         Incluir Frete
                       </Label>
                     </div>
+
+                    {chkFrete && (
+                      <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                        <Label htmlFor="v-frete-modal">Valor Frete (R$)</Label>
+                        <Input
+                          id="v-frete-modal"
+                          type="number"
+                          step="0.01"
+                          value={vFrete || ""}
+                          onChange={(e) => setVFrete(e.target.value ? parseFloat(e.target.value) : 0)}
+                          className="mt-1"
+                        />
+                      </div>
+                    )}
                   </div>
 
                   <div className="pt-4 border-t">

@@ -173,18 +173,24 @@ export function calcularPro(params: ParametrosCalculo): ResultadoCalculo {
     (chkIcms ? pIcms : 0) +
     (chkIss ? pIss : 0);
 
-  // 4. Processamento Final (Taxas -> Arredondamento -> Frete)
+  // 4. Processamento Final (Taxas -> Arredondamento)
   const vFinais: number[] = [];
   for (const v of vBase) {
     const vComTaxa = taxas < 1 ? v / (1 - taxas) : v;
-    let vArredondado = arredondarPsicologico(vComTaxa);
-    if (chkFrete) vArredondado += vFrete;
+    const vArredondado = arredondarPsicologico(vComTaxa);
     vFinais.push(vArredondado);
   }
 
   // 5. Cálculos do Lote (Kit)
   const fatorDesc = qtdKit > 1 ? 1 - descKit / 100 : 1.0;
   const kFinais = vFinais.map((v) => v * qtdKit * fatorDesc);
+  
+  // 6. Adicionar frete apenas uma vez no total (não por unidade)
+  if (chkFrete) {
+    kFinais[0] += vFrete;
+    kFinais[1] += vFrete;
+    kFinais[2] += vFrete;
+  }
 
   // Formatação das Strings de saída
   const resUn = `Mínimo: R$ ${vFinais[0].toFixed(2)} | Sugerido: R$ ${vFinais[1].toFixed(2)} | Premium: R$ ${vFinais[2].toFixed(2)}`;
