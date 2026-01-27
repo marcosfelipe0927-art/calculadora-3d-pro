@@ -27,29 +27,29 @@ export default function Home() {
   // Estado da Calculadora
   const [nomeCliente, setNomeCliente] = useState("Miniatura Dragão");
   const [material, setMaterial] = useState("PLA");
-  const [peso, setPeso] = useState(17);
-  const [precoKg, setPrecoKg] = useState(69.99);
-  const [tImp, setTImp] = useState(2.02);
-  const [tPos, setTPos] = useState(0);
-  const [qtdKit, setQtdKit] = useState(1);
+  const [peso, setPeso] = useState<number>(17);
+  const [precoKg, setPrecoKg] = useState<number>(69.99);
+  const [tImp, setTImp] = useState<number>(2.02);
+  const [tPos, setTPos] = useState<number>(0);
+  const [qtdKit, setQtdKit] = useState<number>(1);
 
   // Taxas e Impostos
-  const [chkIcms, setChkIcms] = useState(false);
-  const [chkIss, setChkIss] = useState(false);
-  const [chkRisco, setChkRisco] = useState(true);
-  const [exclusivo, setExclusivo] = useState(false);
-  const [mkpShopee, setMkpShopee] = useState(false);
-  const [mkpMl, setMkpMl] = useState(false);
-  const [chkFrete, setChkFrete] = useState(false);
-  const [descKit, setDescKit] = useState(10);
+  const [chkIcms, setChkIcms] = useState<boolean>(false);
+  const [chkIss, setChkIss] = useState<boolean>(false);
+  const [chkRisco, setChkRisco] = useState<boolean>(true);
+  const [exclusivo, setExclusivo] = useState<boolean>(false);
+  const [mkpShopee, setMkpShopee] = useState<boolean>(false);
+  const [mkpMl, setMkpMl] = useState<boolean>(false);
+  const [chkFrete, setChkFrete] = useState<boolean>(false);
+  const [descKit, setDescKit] = useState<number>(10);
 
   // Configurações
-  const [nomeMaquina, setNomeMaquina] = useState("Bambu Lab A1");
-  const [cMaq, setCMaq] = useState(0.9);
-  const [estado, setEstado] = useState("Média Nacional");
-  const [vHora, setVHora] = useState(40);
-  const [vFrete, setVFrete] = useState(25);
-  const [multExcl, setMultExcl] = useState(4.5);
+  const [nomeMaquina, setNomeMaquina] = useState<string>("Bambu Lab A1");
+  const [cMaq, setCMaq] = useState<number>(0.9);
+  const [estado, setEstado] = useState<string>("Média Nacional");
+  const [vHora, setVHora] = useState<number>(40);
+  const [vFrete, setVFrete] = useState<number>(25);
+  const [multExcl, setMultExcl] = useState<number>(4.5);
 
   // Resultados
   const [resUn, setResUn] = useState("");
@@ -158,8 +158,8 @@ export default function Home() {
                     <Input
                       id="peso"
                       type="number"
-                      value={peso}
-                      onChange={(e) => setPeso(parseFloat(e.target.value))}
+                      value={peso || ""}
+                      onChange={(e) => setPeso(e.target.value ? parseFloat(e.target.value) : 0)}
                       className="mt-1"
                     />
                   </div>
@@ -170,8 +170,8 @@ export default function Home() {
                       id="preco-kg"
                       type="number"
                       step="0.01"
-                      value={precoKg}
-                      onChange={(e) => setPrecoKg(parseFloat(e.target.value))}
+                      value={precoKg || ""}
+                      onChange={(e) => setPrecoKg(e.target.value ? parseFloat(e.target.value) : 0)}
                       className="mt-1"
                     />
                   </div>
@@ -182,8 +182,8 @@ export default function Home() {
                       id="t-imp"
                       type="number"
                       step="0.01"
-                      value={tImp}
-                      onChange={(e) => setTImp(parseFloat(e.target.value))}
+                      value={tImp || ""}
+                      onChange={(e) => setTImp(e.target.value ? parseFloat(e.target.value) : 0)}
                       className="mt-1"
                     />
                   </div>
@@ -194,8 +194,8 @@ export default function Home() {
                       id="t-pos"
                       type="number"
                       step="0.01"
-                      value={tPos}
-                      onChange={(e) => setTPos(parseFloat(e.target.value))}
+                      value={tPos || ""}
+                      onChange={(e) => setTPos(e.target.value ? parseFloat(e.target.value) : 0)}
                       className="mt-1"
                     />
                   </div>
@@ -205,8 +205,8 @@ export default function Home() {
                     <Input
                       id="qtd"
                       type="number"
-                      value={qtdKit}
-                      onChange={(e) => setQtdKit(parseFloat(e.target.value))}
+                      value={qtdKit || ""}
+                      onChange={(e) => setQtdKit(e.target.value ? parseFloat(e.target.value) : 1)}
                       className="mt-1"
                     />
                   </div>
@@ -428,8 +428,8 @@ export default function Home() {
                       id="c-maq"
                       type="number"
                       step="0.01"
-                      value={cMaq}
-                      onChange={(e) => setCMaq(parseFloat(e.target.value))}
+                      value={cMaq || ""}
+                      onChange={(e) => setCMaq(e.target.value ? parseFloat(e.target.value) : 0)}
                       className="mt-1"
                     />
                   </div>
@@ -464,8 +464,8 @@ export default function Home() {
                       id="v-hora"
                       type="number"
                       step="0.01"
-                      value={vHora}
-                      onChange={(e) => setVHora(parseFloat(e.target.value))}
+                      value={vHora || ""}
+                      onChange={(e) => setVHora(e.target.value ? parseFloat(e.target.value) : 0)}
                       className="mt-1"
                     />
                   </div>
@@ -476,8 +476,8 @@ export default function Home() {
                       id="v-frete"
                       type="number"
                       step="0.01"
-                      value={vFrete}
-                      onChange={(e) => setVFrete(parseFloat(e.target.value))}
+                      value={vFrete || ""}
+                      onChange={(e) => setVFrete(e.target.value ? parseFloat(e.target.value) : 0)}
                       className="mt-1"
                     />
                   </div>
