@@ -399,38 +399,6 @@ export default function Home() {
                       </div>
 
                       <div>
-                        <Label className="text-sm text-gray-600">Custo Unitário</Label>
-                        <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                          <p className="text-sm font-mono text-blue-900">{resUn}</p>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => copyToClipboard(resUn)}
-                            className="mt-2 w-full"
-                          >
-                            <Copy className="w-4 h-4 mr-2" />
-                            Copiar
-                          </Button>
-                        </div>
-                      </div>
-
-                      <div>
-                        <Label className="text-sm text-gray-600">Custo Total (Lote)</Label>
-                        <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                          <p className="text-sm font-mono text-blue-900">{resKit}</p>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => copyToClipboard(resKit)}
-                            className="mt-2 w-full"
-                          >
-                            <Copy className="w-4 h-4 mr-2" />
-                            Copiar
-                          </Button>
-                        </div>
-                      </div>
-
-                      <div>
                         <Label className="text-sm text-gray-600">WhatsApp</Label>
                         <div className="mt-2 p-3 bg-purple-50 rounded-lg border border-purple-200">
                           <p className="text-xs font-mono text-purple-900 whitespace-pre-wrap">
