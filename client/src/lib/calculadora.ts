@@ -192,7 +192,16 @@ export function calcularPro(params: ParametrosCalculo): ResultadoCalculo {
 
   // 6. Cálculos do Lote (Kit)
   const fatorDesc = qtdKit > 1 ? 1 - descKit / 100 : 1.0;
-  const kFinais = vFinais.map((v) => v * qtdKit * fatorDesc);
+  // Remover frete dos unitários antes de multiplicar (frete será adicionado uma única vez)
+  const vSemFrete = vFinais.map((v) => chkFrete ? v - vFrete : v);
+  const kFinais = vSemFrete.map((v) => v * qtdKit * fatorDesc);
+  
+  // Adicionar frete apenas uma vez no total do lote
+  if (chkFrete) {
+    kFinais[0] += vFrete;
+    kFinais[1] += vFrete;
+    kFinais[2] += vFrete;
+  }
 
   // Formatação das Strings de saída
   const resUn = `Mínimo: R$ ${vFinais[0].toFixed(2)} | Sugerido: R$ ${vFinais[1].toFixed(2)} | Premium: R$ ${vFinais[2].toFixed(2)}`;
