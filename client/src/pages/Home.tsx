@@ -195,19 +195,19 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <div>
-                    <Label htmlFor="t-imp">Tempo Impressão (h)</Label>
-                    <Input
-                      id="t-imp"
-                      type="number"
-                      step="0.01"
-                      value={tImp || ""}
-                      onChange={(e) => setTImp(e.target.value ? parseFloat(e.target.value) : 0)}
-                      className="mt-1"
-                    />
-                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <Label htmlFor="t-imp">Tempo Impressão (h)</Label>
+                      <Input
+                        id="t-imp"
+                        type="number"
+                        step="0.01"
+                        value={tImp || ""}
+                        onChange={(e) => setTImp(e.target.value ? parseFloat(e.target.value) : 0)}
+                        className="mt-1"
+                      />
+                    </div>
 
-                  <div className="grid grid-cols-2 gap-2">
                     <div>
                       <Label htmlFor="t-pos-horas">Acabamento - Horas</Label>
                       <Input
@@ -219,6 +219,7 @@ export default function Home() {
                         className="mt-1"
                       />
                     </div>
+
                     <div>
                       <Label htmlFor="t-pos-minutos">Minutos</Label>
                       <Input
