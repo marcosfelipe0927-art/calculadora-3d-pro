@@ -161,7 +161,7 @@ export function calcularPro(params: ParametrosCalculo): ResultadoCalculo {
   let custoBase = cMaterial + cOperacional;
   if (chkRisco) custoBase *= 1.1;
 
-  // 2. Cálculo das Margens (Mínimo, Sugerido, Premium) - SEM trabalho de acabamento
+  // 2. Cálculo das Margens (Mínimo, Sugerido, Premium)
   const margens = exclusivo
     ? [multExcl, multExcl * 1.3, multExcl * 1.6]
     : [2.5, 3.5, 5.0];
@@ -177,7 +177,7 @@ export function calcularPro(params: ParametrosCalculo): ResultadoCalculo {
     (chkIcms ? pIcms : 0) +
     (chkIss ? pIss : 0);
 
-  // 4. Custo unitario de trabalho (acabamento por unidade)
+  // 4. Custo unitário de trabalho (acabamento por unidade)
   const custoTrabalhoUnitario = tPosTotal * vHora;
 
   // 5. Processamento Final (Taxas -> Arredondamento -> Adicionar acabamento e frete)
@@ -191,9 +191,13 @@ export function calcularPro(params: ParametrosCalculo): ResultadoCalculo {
   }
 
   // 6. Cálculos do Lote (Kit)
+  // Para o lote, removemos o frete dos unitários, multiplicamos, e depois adicionamos frete uma única vez
   const fatorDesc = qtdKit > 1 ? 1 - descKit / 100 : 1.0;
-  // Remover frete dos unitários antes de multiplicar (frete será adicionado uma única vez)
+  
+  // Preço sem frete para multiplicação
   const vSemFrete = vFinais.map((v) => chkFrete ? v - vFrete : v);
+  
+  // Multiplicar pela quantidade e aplicar desconto
   const kFinais = vSemFrete.map((v) => v * qtdKit * fatorDesc);
   
   // Adicionar frete apenas uma vez no total do lote
