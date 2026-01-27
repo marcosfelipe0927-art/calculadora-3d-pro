@@ -372,6 +372,97 @@ export default function Home() {
               </Button>
             </div>
 
+            {/* Mobile: Resultados */}
+            <div className="lg:hidden mb-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">💰 Resultados</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {resUn && (
+                    <>
+                      <div>
+                        <Label className="text-sm text-gray-600">Preço Unitário</Label>
+                        <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                          <p className="text-sm font-mono text-blue-900">{resUn}</p>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => copyToClipboard(resUn)}
+                            className="mt-2 w-full"
+                          >
+                            <Copy className="w-4 h-4 mr-2" />
+                            Copiar
+                          </Button>
+                        </div>
+                      </div>
+
+                      {qtdKit > 1 && (
+                        <div>
+                          <Label className="text-sm text-gray-600">Preço Total (Lote)</Label>
+                          <div className="mt-2 p-3 bg-green-50 rounded-lg border border-green-200">
+                            <p className="text-sm font-mono text-green-900">{resKit}</p>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => copyToClipboard(resKit)}
+                              className="mt-2 w-full"
+                            >
+                              <Copy className="w-4 h-4 mr-2" />
+                              Copiar
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+
+                      <div>
+                        <Label className="text-sm text-gray-600">Custos Totais</Label>
+                        <div className="mt-2 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                          <p className="text-sm font-mono text-yellow-900">{resCustoTotal}</p>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => copyToClipboard(resCustoTotal)}
+                            className="mt-2 w-full"
+                          >
+                            <Copy className="w-4 h-4 mr-2" />
+                            Copiar
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label className="text-sm text-gray-600">WhatsApp</Label>
+                        <div className="mt-2 p-3 bg-purple-50 rounded-lg border border-purple-200">
+                          <p className="text-xs font-mono text-purple-900 whitespace-pre-wrap">
+                            {resZap}
+                          </p>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => copyToClipboard(resZap)}
+                            className="mt-2 w-full"
+                          >
+                            <Copy className="w-4 h-4 mr-2" />
+                            Copiar
+                          </Button>
+                        </div>
+                      </div>
+
+                      <Button
+                        onClick={downloadOrcamento}
+                        variant="outline"
+                        className="w-full"
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Baixar Orçamento
+                      </Button>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
             {/* Desktop: 3 colunas lado a lado */}
             <div className="hidden lg:grid grid-cols-3 gap-6 mb-6" id="cards-container">
               {/* Coluna 1: Dados da Peça */}
