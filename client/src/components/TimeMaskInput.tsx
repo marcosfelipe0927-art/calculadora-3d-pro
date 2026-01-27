@@ -14,7 +14,7 @@ export const TimeMaskInput: React.FC<TimeMaskInputProps> = ({
   placeholder = "00:00",
   isDarkMode = false,
 }) => {
-  const [displayValue, setDisplayValue] = useState(value);
+  const [displayValue, setDisplayValue] = useState(value === '0' ? '' : value);
 
   const formatTimeInput = (input: string): string => {
     // Remove tudo que não é número
@@ -44,9 +44,15 @@ export const TimeMaskInput: React.FC<TimeMaskInputProps> = ({
     } else if (formatted) {
       onChange(formatted);
     } else {
-      onChange('');
+      onChange('0');
     }
   };
+
+  React.useEffect(() => {
+    if (value === '0' || value === '') {
+      setDisplayValue('');
+    }
+  }, [value]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     // Permite apenas números, backspace, delete, tab
@@ -64,7 +70,7 @@ export const TimeMaskInput: React.FC<TimeMaskInputProps> = ({
       onKeyDown={handleKeyDown}
       placeholder={placeholder}
       maxLength={5}
-      className={isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : ''}
+      className={`mt-1 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : ''}`}
     />
   );
 };

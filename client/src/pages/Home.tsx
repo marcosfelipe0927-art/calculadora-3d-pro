@@ -359,7 +359,7 @@ export default function Home() {
           </Button>
         </div>
 
-        <Tabs defaultValue="calculadora" className="w-full">
+        <Tabs defaultValue="calculadora" className={`w-full ${isDarkMode ? 'dark' : ''}`}>
           <div className="flex justify-center items-center gap-4 mb-8">
             <TabsList className="grid grid-cols-3">
               <TabsTrigger value="calculadora">📊 Calcular</TabsTrigger>
@@ -407,7 +407,7 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-5 gap-2">
                     <div>
                       <Label htmlFor="material" className={isDarkMode ? 'text-white' : ''}>Material</Label>
                       <Select value={material} onValueChange={setMaterial}>
@@ -444,11 +444,9 @@ export default function Home() {
                         className="mt-1"
                       />
                     </div>
-                  </div>
 
-                  <div className="grid grid-cols-3 gap-2">
                     <div>
-                      <Label htmlFor="t-imp">Tempo Impressão (HH:mm)</Label>
+                      <Label htmlFor="t-imp" className={isDarkMode ? 'text-white' : ''}>Tempo Impressão (HH:mm)</Label>
                       <TimeMaskInput
                         value={tImp.toString()}
                         onChange={(value) => setTImp(value ? parseFloat(value) : 0)}
@@ -457,8 +455,8 @@ export default function Home() {
                       />
                     </div>
 
-                    <div className="col-span-2">
-                      <Label htmlFor="t-pos">Acabamento (HH:mm)</Label>
+                    <div>
+                      <Label htmlFor="t-pos" className={isDarkMode ? 'text-white' : ''}>Acabamento (HH:mm)</Label>
                       <TimeMaskInput
                         value={(tPosHoras + tPosMinutos / 60).toString()}
                         onChange={(value) => {
@@ -629,7 +627,7 @@ export default function Home() {
                       <div>
                         <Label className="text-sm" style={{color: isDarkMode ? '#ffffff' : '#4b5563'}}>Preço Unitário</Label>
                         <div className={`mt-2 p-3 rounded-lg border ${isDarkMode ? 'bg-blue-900 border-blue-700' : 'bg-blue-50 border-blue-200'}`}>
-                          <p className={`text-sm font-mono ${isDarkMode ? 'text-blue-100' : 'text-blue-900'}`}>{resUn}</p>
+                          <p className={`text-sm font-mono ${isDarkMode ? 'text-blue-100' : 'text-gray-900'}`}>{resUn}</p>
                           <Button
                             size="sm"
                             variant="ghost"
@@ -646,7 +644,7 @@ export default function Home() {
                         <div>
                           <Label className="text-sm" style={{color: isDarkMode ? '#ffffff' : '#4b5563'}}>Preço Total (Lote)</Label>
                           <div className={`mt-2 p-3 rounded-lg border ${isDarkMode ? 'bg-green-900 border-green-700' : 'bg-green-50 border-green-200'}`}>
-                            <p className={`text-sm font-mono ${isDarkMode ? 'text-green-100' : 'text-green-900'}`}>{resKit}</p>
+                            <p className={`text-sm font-mono ${isDarkMode ? 'text-green-100' : 'text-gray-900'}`}>{resKit}</p>
                             <Button
                               size="sm"
                               variant="ghost"
@@ -663,7 +661,7 @@ export default function Home() {
                       <div>
                         <Label className="text-sm" style={{color: isDarkMode ? '#ffffff' : '#4b5563'}}>Custos Totais</Label>
                         <div className={`mt-2 p-3 rounded-lg border ${isDarkMode ? 'bg-yellow-900 border-yellow-700' : 'bg-yellow-50 border-yellow-200'}`}>
-                          <p className={`text-sm font-mono ${isDarkMode ? 'text-yellow-100' : 'text-yellow-900'}`}>{resCustoTotal}</p>
+                          <p className={`text-sm font-mono ${isDarkMode ? 'text-yellow-100' : 'text-gray-900'}`}>{resCustoTotal}</p>
                           <Button
                             size="sm"
                             variant="ghost"
@@ -679,7 +677,7 @@ export default function Home() {
                       <div>
                         <Label className="text-sm" style={{color: isDarkMode ? '#ffffff' : '#4b5563'}}>WhatsApp</Label>
                         <div className={`mt-2 p-3 rounded-lg border ${isDarkMode ? 'bg-purple-900 border-purple-700' : 'bg-purple-50 border-purple-200'}`}>
-                          <p className={`text-xs font-mono whitespace-pre-wrap ${isDarkMode ? 'text-purple-100' : 'text-purple-900'}`}>
+                          <p className={`text-xs font-mono whitespace-pre-wrap ${isDarkMode ? 'text-purple-100' : 'text-gray-900'}`}>
                             {resZap}
                           </p>
                           <Button
@@ -748,7 +746,7 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-5 gap-2">
                     <div>
                       <Label htmlFor="material" className={isDarkMode ? 'text-white' : ''}>Material</Label>
                       <Select value={material} onValueChange={setMaterial}>
@@ -785,11 +783,9 @@ export default function Home() {
                         className="mt-1"
                       />
                     </div>
-                  </div>
 
-                  <div className="grid grid-cols-3 gap-2">
                     <div>
-                      <Label htmlFor="t-imp">Tempo Impressão (HH:mm)</Label>
+                      <Label htmlFor="t-imp" className={isDarkMode ? 'text-white' : ''}>Tempo Impressão (HH:mm)</Label>
                       <TimeMaskInput
                         value={tImp.toString()}
                         onChange={(value) => setTImp(value ? parseFloat(value) : 0)}
@@ -798,8 +794,8 @@ export default function Home() {
                       />
                     </div>
 
-                    <div className="col-span-2">
-                      <Label htmlFor="t-pos">Acabamento (HH:mm)</Label>
+                    <div>
+                      <Label htmlFor="t-pos" className={isDarkMode ? 'text-white' : ''}>Acabamento (HH:mm)</Label>
                       <TimeMaskInput
                         value={(tPosHoras + tPosMinutos / 60).toString()}
                         onChange={(value) => {
@@ -1055,10 +1051,10 @@ export default function Home() {
           </TabsContent>
 
           <TabsContent value="configuracoes">
-            <Card>
+            <Card className={isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : ''}>
               <CardHeader>
-                <CardTitle>⚙️ Configurações</CardTitle>
-                <CardDescription>Defina os parâmetros padrão da sua operação</CardDescription>
+                <CardTitle className={isDarkMode ? 'text-white' : ''}>⚙️ Configurações</CardTitle>
+                <CardDescription className={isDarkMode ? 'text-gray-400' : ''}>Defina os parâmetros padrão da sua operação</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1141,10 +1137,10 @@ export default function Home() {
           </TabsContent>
 
           <TabsContent value="historico">
-            <Card>
+            <Card className={isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : ''}>
               <CardHeader>
-                <CardTitle>⚡️ Histórico de Orçamentos</CardTitle>
-                <CardDescription>Todos os orçamentos calculados</CardDescription>
+                <CardTitle className={isDarkMode ? 'text-white' : ''}>⚡️ Histórico de Orçamentos</CardTitle>
+                <CardDescription className={isDarkMode ? 'text-gray-400' : ''}>Todos os orçamentos calculados</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <Input
