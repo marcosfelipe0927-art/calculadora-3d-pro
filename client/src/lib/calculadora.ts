@@ -115,6 +115,10 @@ export interface ResultadoCalculo {
   resZap: string;
   valoresUnitarios: number[];
   valoresKit: number[];
+  custosUnitarios: number[];
+  custosKit: number[];
+  resCustoUn: string;
+  resCustoKit: string;
 }
 
 export function calcularPro(params: ParametrosCalculo): ResultadoCalculo {
@@ -204,14 +208,37 @@ export function calcularPro(params: ParametrosCalculo): ResultadoCalculo {
     kFinais[2] += vFrete;
   }
 
+  // Cálculo dos custos sem lucro (apenas custo de produção + acabamento + frete)
+  const custosUnitarios: number[] = [];
+  for (let i = 0; i < 3; i++) {
+    let custo = custoBase;
+    custo += custoTrabalhoUnitario;
+    if (chkFrete) custo += vFrete;
+    custosUnitarios.push(custo);
+  }
+
+  // Custos do lote
+  const vCustoSemFrete = custosUnitarios.map((v) => chkFrete ? v - vFrete : v);
+  const custosKit = vCustoSemFrete.map((v) => v * qtdKit);
+  if (chkFrete) {
+    custosKit[0] += vFrete;
+    custosKit[1] += vFrete;
+    custosKit[2] += vFrete;
+  }
+
   // Formatação das Strings de saída
   const resUn = `Mínimo: R$ ${vFinais[0].toFixed(2)} | Sugerido: R$ ${vFinais[1].toFixed(2)} | Premium: R$ ${vFinais[2].toFixed(2)}`;
   const resKit = `Mínimo: R$ ${kFinais[0].toFixed(2)} | Sugerido: R$ ${kFinais[1].toFixed(2)} | Premium: R$ ${kFinais[2].toFixed(2)}`;
+  const resCustoUn = `Mínimo: R$ ${custosUnitarios[0].toFixed(2)} | Sugerido: R$ ${custosUnitarios[1].toFixed(2)} | Premium: R$ ${custosUnitarios[2].toFixed(2)}`;
+  const resCustoKit = `Mínimo: R$ ${custosKit[0].toFixed(2)} | Sugerido: R$ ${custosKit[1].toFixed(2)} | Premium: R$ ${custosKit[2].toFixed(2)}`;
 
   // Texto WhatsApp (Usa o valor Sugerido como padrão)
   const dataE = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
   const dataFormatada = `${String(dataE.getDate()).padStart(2, "0")}/${String(dataE.getMonth() + 1).padStart(2, "0")}`;
-  const txt = `📄 ORÇAMENTO: ${nomeCliente || "Peça 3D"}\n💰 Valor Total: R$ ${kFinais[1].toFixed(2)}\n📅 Entrega estimada: ${dataFormatada}\n⚙️ ${material} | ${nomeMaquina}`;
+  const txt = `📄 ORÇAMENTO: ${nomeCliente || "Peça 3D"}
+💰 Valor Total: R$ ${kFinais[1].toFixed(2)}
+📅 Entrega estimada: ${dataFormatada}
+⚙️ ${material} | ${nomeMaquina}`;
 
   return {
     resUn,
@@ -219,5 +246,9 @@ export function calcularPro(params: ParametrosCalculo): ResultadoCalculo {
     resZap: txt,
     valoresUnitarios: vFinais,
     valoresKit: kFinais,
+    custosUnitarios,
+    custosKit,
+    resCustoUn,
+    resCustoKit,
   };
 }
