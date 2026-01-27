@@ -25,7 +25,8 @@ import {
 
 export default function Home() {
   // Estado da Calculadora
-  const [nomeCliente, setNomeCliente] = useState("Miniatura Dragão");
+  const [nomeCliente, setNomeCliente] = useState("");
+  const [nomePeca, setNomePeca] = useState("");
   const [material, setMaterial] = useState("PLA");
   const [peso, setPeso] = useState<number>(17);
   const [precoKg, setPrecoKg] = useState<number>(69.99);
@@ -81,6 +82,7 @@ export default function Home() {
       chkIcms,
       chkIss,
       nomeCliente,
+      nomePeca,
     };
 
     const resultado = calcularPro(params);
@@ -130,15 +132,27 @@ export default function Home() {
                   <CardTitle className="text-lg">📦 Dados da Peça</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div>
-                    <Label htmlFor="cliente">Cliente/Peça</Label>
-                    <Input
-                      id="cliente"
-                      placeholder="Ex: Miniatura Dragão"
-                      value={nomeCliente}
-                      onChange={(e) => setNomeCliente(e.target.value)}
-                      className="mt-1"
-                    />
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label htmlFor="cliente">Cliente</Label>
+                      <Input
+                        id="cliente"
+                        placeholder="Nome"
+                        value={nomeCliente}
+                        onChange={(e) => setNomeCliente(e.target.value)}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="peca">Peça</Label>
+                      <Input
+                        id="peca"
+                        placeholder="Descrição"
+                        value={nomePeca}
+                        onChange={(e) => setNomePeca(e.target.value)}
+                        className="mt-1"
+                      />
+                    </div>
                   </div>
 
                   <div>

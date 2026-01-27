@@ -105,6 +105,7 @@ export interface ParametrosCalculo {
   chkIcms: boolean;
   chkIss: boolean;
   nomeCliente: string;
+  nomePeca: string;
 }
 
 // Interface para o resultado
