@@ -1,0 +1,205 @@
+// Calculadora 3D PRO - Lógica de Cálculo
+// Convertida de Python para TypeScript/JavaScript
+
+// --- TABELAS DE CONFIGURAÇÃO ---
+export const custoEnergiaKwh: Record<string, number> = {
+  "Média Nacional": 0.72,
+  "AC": 0.82,
+  "AL": 0.75,
+  "AP": 0.70,
+  "AM": 0.83,
+  "BA": 0.78,
+  "CE": 0.79,
+  "DF": 0.68,
+  "ES": 0.65,
+  "GO": 0.72,
+  "MA": 0.74,
+  "MT": 0.80,
+  "MS": 0.85,
+  "MG": 0.75,
+  "PA": 0.88,
+  "PB": 0.72,
+  "PR": 0.64,
+  "PE": 0.77,
+  "PI": 0.76,
+  "RJ": 0.85,
+  "RN": 0.73,
+  "RS": 0.72,
+  "RO": 0.78,
+  "RR": 0.70,
+  "SC": 0.62,
+  "SP": 0.70,
+  "SE": 0.75,
+  "TO": 0.77,
+};
+
+export const aliquotasIcms: Record<string, number> = {
+  "Média Nacional": 18,
+  "AC": 17,
+  "AL": 19,
+  "AP": 18,
+  "AM": 18,
+  "BA": 19,
+  "CE": 18,
+  "DF": 18,
+  "ES": 17,
+  "GO": 17,
+  "MA": 20,
+  "MT": 17,
+  "MS": 17,
+  "MG": 18,
+  "PA": 17,
+  "PB": 18,
+  "PR": 19,
+  "PE": 18,
+  "PI": 18,
+  "RJ": 20,
+  "RN": 18,
+  "RS": 17,
+  "RO": 17,
+  "RR": 17,
+  "SC": 17,
+  "SP": 18,
+  "SE": 18,
+  "TO": 18,
+};
+
+export const maquinasBrasil: Record<string, [number, number]> = {
+  "Bambu Lab A1": [0.95, 1.0],
+  "Bambu Lab A1 Mini": [0.75, 0.8],
+  "Creality K1 / K1C": [1.5, 1.4],
+  "Bambu Lab P1P / P1S": [1.6, 1.3],
+  "Bambu Lab X1 Carbon": [2.5, 1.5],
+  "Creality Ender 3 V3": [0.7, 0.9],
+  "Outra / Personalizada": [0.9, 1.0],
+};
+
+// Função para arredondar com psicologia de preço
+export function arredondarPsicologico(valor: number): number {
+  const inteiro = Math.floor(valor);
+  const centavos = valor - inteiro;
+  return inteiro + (centavos <= 0.49 ? 0.49 : 0.99);
+}
+
+// Interface para os parâmetros de cálculo
+export interface ParametrosCalculo {
+  material: string;
+  peso: number;
+  precoKg: number;
+  tImp: number;
+  tPos: number;
+  exclusivo: boolean;
+  qtdKit: number;
+  descKit: number;
+  vHora: number;
+  cMaq: number;
+  estado: string;
+  mkpShopee: boolean;
+  mkpMl: boolean;
+  chkFrete: boolean;
+  vFrete: number;
+  chkRisco: boolean;
+  multExcl: number;
+  nomeMaquina: string;
+  chkIcms: boolean;
+  chkIss: boolean;
+  nomeCliente: string;
+}
+
+// Interface para o resultado
+export interface ResultadoCalculo {
+  resUn: string;
+  resKit: string;
+  resZap: string;
+  valoresUnitarios: number[];
+  valoresKit: number[];
+}
+
+export function calcularPro(params: ParametrosCalculo): ResultadoCalculo {
+  const {
+    material,
+    peso,
+    precoKg,
+    tImp,
+    tPos,
+    exclusivo,
+    qtdKit,
+    descKit,
+    vHora,
+    cMaq,
+    estado,
+    mkpShopee,
+    mkpMl,
+    chkFrete,
+    vFrete,
+    chkRisco,
+    multExcl,
+    nomeMaquina,
+    chkIcms,
+    chkIss,
+    nomeCliente,
+  } = params;
+
+  // 1. Custos de Produção
+  const valorKwh = custoEnergiaKwh[estado] || 0.72;
+  const fatorCons = maquinasBrasil[nomeMaquina]?.[1] || 1.0;
+  const multMat: Record<string, number> = {
+    PLA: 0.8,
+    PETG: 1.0,
+    ABS: 1.4,
+  };
+  const eReal = valorKwh * (multMat[material] || 1.0) * fatorCons;
+
+  const cMaterial = (precoKg / 1000) * peso;
+  const cOperacional = (eReal + cMaq) * tImp;
+  const cTrabalho = tPos * vHora;
+
+  let custoBase = cMaterial + cOperacional + cTrabalho;
+  if (chkRisco) custoBase *= 1.1;
+
+  // 2. Cálculo das Margens (Mínimo, Sugerido, Premium)
+  const margens = exclusivo
+    ? [multExcl, multExcl * 1.3, multExcl * 1.6]
+    : [2.5, 3.5, 5.0];
+
+  const vBase = margens.map((m) => custoBase * m);
+
+  // 3. Markup de Taxas e Impostos
+  const pIcms = (aliquotasIcms[estado] || 18) / 100;
+  const pIss = 0.05;
+  const taxas =
+    (mkpShopee ? 0.15 : 0) +
+    (mkpMl ? 0.17 : 0) +
+    (chkIcms ? pIcms : 0) +
+    (chkIss ? pIss : 0);
+
+  // 4. Processamento Final (Taxas -> Arredondamento -> Frete)
+  const vFinais: number[] = [];
+  for (const v of vBase) {
+    const vComTaxa = taxas < 1 ? v / (1 - taxas) : v;
+    let vArredondado = arredondarPsicologico(vComTaxa);
+    if (chkFrete) vArredondado += vFrete;
+    vFinais.push(vArredondado);
+  }
+
+  // 5. Cálculos do Lote (Kit)
+  const fatorDesc = qtdKit > 1 ? 1 - descKit / 100 : 1.0;
+  const kFinais = vFinais.map((v) => v * qtdKit * fatorDesc);
+
+  // Formatação das Strings de saída
+  const resUn = `Mínimo: R$ ${vFinais[0].toFixed(2)} | Sugerido: R$ ${vFinais[1].toFixed(2)} | Premium: R$ ${vFinais[2].toFixed(2)}`;
+  const resKit = `Mínimo: R$ ${kFinais[0].toFixed(2)} | Sugerido: R$ ${kFinais[1].toFixed(2)} | Premium: R$ ${kFinais[2].toFixed(2)}`;
+
+  // Texto WhatsApp (Usa o valor Sugerido como padrão)
+  const dataE = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
+  const dataFormatada = `${String(dataE.getDate()).padStart(2, "0")}/${String(dataE.getMonth() + 1).padStart(2, "0")}`;
+  const txt = `📄 ORÇAMENTO: ${nomeCliente || "Peça 3D"}\n💰 Valor Total: R$ ${kFinais[1].toFixed(2)}\n📅 Entrega estimada: ${dataFormatada}\n⚙️ ${material} | ${nomeMaquina}`;
+
+  return {
+    resUn,
+    resKit,
+    resZap: txt,
+    valoresUnitarios: vFinais,
+    valoresKit: kFinais,
+  };
+}
