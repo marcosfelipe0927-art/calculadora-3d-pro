@@ -175,3 +175,65 @@
     }
   }
 }
+/* Consistência do modo escuro nas abas */
+.dark [role="tabpanel"] {
+  @apply bg-gray-800 text-white;
+}
+
+.dark [role="tabpanel"] .bg-gray-50 {
+  @apply bg-gray-700 text-white;
+}
+
+.dark [role="tabpanel"] .bg-blue-50 {
+  @apply bg-blue-900 text-white;
+}
+
+.dark [role="tabpanel"] label {
+  @apply text-white;
+}
+
+.dark [role="tabpanel"] input,
+.dark [role="tabpanel"] select {
+  @apply bg-gray-700 border-gray-600 text-white;
+}
+
+.dark [role="tabpanel"] .text-gray-500 {
+  @apply text-gray-400;
+}
+
+.dark [role="tabpanel"] .text-gray-600 {
+  @apply text-gray-300;
+}
+
+.dark [role="tabpanel"] .text-gray-700 {
+  @apply text-gray-200;
+}
+
+.dark [role="tabpanel"] .text-gray-900 {
+  @apply text-white;
+}
+
+/* Cores dinâmicas para cards de resultado */
+.result-card {
+  @apply p-4 rounded-lg border;
+}
+
+.result-card.dark-mode {
+  @apply bg-gray-700 border-gray-600 text-white;
+}
+
+.result-card.light-mode {
+  @apply bg-gray-50 border-gray-200 text-gray-900;
+}
+
+.result-card.light-mode .text-white {
+  @apply text-gray-900;
+}
+
+.result-card.light-mode .text-gray-400 {
+  @apply text-gray-600;
+}
+
+.result-card.light-mode .text-gray-300 {
+  @apply text-gray-700;
+}

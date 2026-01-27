@@ -13,6 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Copy, Download, Share2, Clock, Lock } from "lucide-react";
+import { TimeMaskInput } from "@/components/TimeMaskInput";
 import { toast } from "sonner";
 import {
   calcularPro,
@@ -447,40 +448,31 @@ export default function Home() {
 
                   <div className="grid grid-cols-3 gap-2">
                     <div>
-                      <Label htmlFor="t-imp">Tempo Impressão (h)</Label>
-                      <Input
-                        id="t-imp"
-                        type="number"
-                        step="0.01"
-                        value={tImp || ""}
-                        onChange={(e) => setTImp(e.target.value ? parseFloat(e.target.value) : 0)}
-                        className="mt-1"
+                      <Label htmlFor="t-imp">Tempo Impressão (HH:mm)</Label>
+                      <TimeMaskInput
+                        value={tImp.toString()}
+                        onChange={(value) => setTImp(value ? parseFloat(value) : 0)}
+                        placeholder="00:00"
+                        isDarkMode={isDarkMode}
                       />
                     </div>
 
-                    <div>
-                      <Label htmlFor="t-pos-horas">Acabamento - Horas</Label>
-                      <Input
-                        id="t-pos-horas"
-                        type="number"
-                        placeholder="0"
-                        value={tPosHoras || ""}
-                        onChange={(e) => setTPosHoras(e.target.value ? parseFloat(e.target.value) : 0)}
-                        className="mt-1"
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="t-pos-minutos">Minutos</Label>
-                      <Input
-                        id="t-pos-minutos"
-                        type="number"
-                        placeholder="0"
-                        min="0"
-                        max="59"
-                        value={tPosMinutos || ""}
-                        onChange={(e) => setTPosMinutos(e.target.value ? parseFloat(e.target.value) : 0)}
-                        className="mt-1"
+                    <div className="col-span-2">
+                      <Label htmlFor="t-pos">Acabamento (HH:mm)</Label>
+                      <TimeMaskInput
+                        value={(tPosHoras + tPosMinutos / 60).toString()}
+                        onChange={(value) => {
+                          if (value) {
+                            const totalHours = parseFloat(value);
+                            setTPosHoras(Math.floor(totalHours));
+                            setTPosMinutos(Math.round((totalHours % 1) * 60));
+                          } else {
+                            setTPosHoras(0);
+                            setTPosMinutos(0);
+                          }
+                        }}
+                        placeholder="00:00"
+                        isDarkMode={isDarkMode}
                       />
                     </div>
                   </div>
@@ -635,9 +627,9 @@ export default function Home() {
                   {resUn && (
                     <>
                       <div>
-                        <Label className="text-sm text-gray-600" style={{color: '#ffffff'}}>Preço Unitário</Label>
-                        <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                          <p className="text-sm font-mono text-blue-900">{resUn}</p>
+                        <Label className="text-sm" style={{color: isDarkMode ? '#ffffff' : '#4b5563'}}>Preço Unitário</Label>
+                        <div className={`mt-2 p-3 rounded-lg border ${isDarkMode ? 'bg-blue-900 border-blue-700' : 'bg-blue-50 border-blue-200'}`}>
+                          <p className={`text-sm font-mono ${isDarkMode ? 'text-blue-100' : 'text-blue-900'}`}>{resUn}</p>
                           <Button
                             size="sm"
                             variant="ghost"
@@ -652,9 +644,9 @@ export default function Home() {
 
                       {qtdKit > 1 && (
                         <div>
-                          <Label className="text-sm text-gray-600" style={{color: '#ffffff'}}>Preço Total (Lote)</Label>
-                          <div className="mt-2 p-3 bg-green-50 rounded-lg border border-green-200">
-                            <p className="text-sm font-mono text-green-900">{resKit}</p>
+                          <Label className="text-sm" style={{color: isDarkMode ? '#ffffff' : '#4b5563'}}>Preço Total (Lote)</Label>
+                          <div className={`mt-2 p-3 rounded-lg border ${isDarkMode ? 'bg-green-900 border-green-700' : 'bg-green-50 border-green-200'}`}>
+                            <p className={`text-sm font-mono ${isDarkMode ? 'text-green-100' : 'text-green-900'}`}>{resKit}</p>
                             <Button
                               size="sm"
                               variant="ghost"
@@ -669,9 +661,9 @@ export default function Home() {
                       )}
 
                       <div>
-                        <Label className="text-sm text-gray-600" style={{color: '#ffffff'}}>Custos Totais</Label>
-                        <div className="mt-2 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                          <p className="text-sm font-mono text-yellow-900">{resCustoTotal}</p>
+                        <Label className="text-sm" style={{color: isDarkMode ? '#ffffff' : '#4b5563'}}>Custos Totais</Label>
+                        <div className={`mt-2 p-3 rounded-lg border ${isDarkMode ? 'bg-yellow-900 border-yellow-700' : 'bg-yellow-50 border-yellow-200'}`}>
+                          <p className={`text-sm font-mono ${isDarkMode ? 'text-yellow-100' : 'text-yellow-900'}`}>{resCustoTotal}</p>
                           <Button
                             size="sm"
                             variant="ghost"
@@ -685,9 +677,9 @@ export default function Home() {
                       </div>
 
                       <div>
-                        <Label className="text-sm text-gray-600" style={{color: '#ffffff'}}>WhatsApp</Label>
-                        <div className="mt-2 p-3 bg-purple-50 rounded-lg border border-purple-200">
-                          <p className="text-xs font-mono text-purple-900 whitespace-pre-wrap">
+                        <Label className="text-sm" style={{color: isDarkMode ? '#ffffff' : '#4b5563'}}>WhatsApp</Label>
+                        <div className={`mt-2 p-3 rounded-lg border ${isDarkMode ? 'bg-purple-900 border-purple-700' : 'bg-purple-50 border-purple-200'}`}>
+                          <p className={`text-xs font-mono whitespace-pre-wrap ${isDarkMode ? 'text-purple-100' : 'text-purple-900'}`}>
                             {resZap}
                           </p>
                           <Button
@@ -797,40 +789,31 @@ export default function Home() {
 
                   <div className="grid grid-cols-3 gap-2">
                     <div>
-                      <Label htmlFor="t-imp">Tempo Impressão (h)</Label>
-                      <Input
-                        id="t-imp"
-                        type="number"
-                        step="0.01"
-                        value={tImp || ""}
-                        onChange={(e) => setTImp(e.target.value ? parseFloat(e.target.value) : 0)}
-                        className="mt-1"
+                      <Label htmlFor="t-imp">Tempo Impressão (HH:mm)</Label>
+                      <TimeMaskInput
+                        value={tImp.toString()}
+                        onChange={(value) => setTImp(value ? parseFloat(value) : 0)}
+                        placeholder="00:00"
+                        isDarkMode={isDarkMode}
                       />
                     </div>
 
-                    <div>
-                      <Label htmlFor="t-pos-horas">Acabamento - Horas</Label>
-                      <Input
-                        id="t-pos-horas"
-                        type="number"
-                        placeholder="0"
-                        value={tPosHoras || ""}
-                        onChange={(e) => setTPosHoras(e.target.value ? parseFloat(e.target.value) : 0)}
-                        className="mt-1"
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="t-pos-minutos">Minutos</Label>
-                      <Input
-                        id="t-pos-minutos"
-                        type="number"
-                        placeholder="0"
-                        min="0"
-                        max="59"
-                        value={tPosMinutos || ""}
-                        onChange={(e) => setTPosMinutos(e.target.value ? parseFloat(e.target.value) : 0)}
-                        className="mt-1"
+                    <div className="col-span-2">
+                      <Label htmlFor="t-pos">Acabamento (HH:mm)</Label>
+                      <TimeMaskInput
+                        value={(tPosHoras + tPosMinutos / 60).toString()}
+                        onChange={(value) => {
+                          if (value) {
+                            const totalHours = parseFloat(value);
+                            setTPosHoras(Math.floor(totalHours));
+                            setTPosMinutos(Math.round((totalHours % 1) * 60));
+                          } else {
+                            setTPosHoras(0);
+                            setTPosMinutos(0);
+                          }
+                        }}
+                        placeholder="00:00"
+                        isDarkMode={isDarkMode}
                       />
                     </div>
                   </div>
