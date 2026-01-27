@@ -123,7 +123,257 @@ export default function Home() {
           </TabsList>
 
           <TabsContent value="calculadora">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6" id="cards-container">
+            {/* Mobile: Dados da Peça */}
+            <div className="lg:hidden mb-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">📦 Dados da Peça</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label htmlFor="cliente">Cliente</Label>
+                      <Input
+                        id="cliente"
+                        placeholder="Nome"
+                        value={nomeCliente}
+                        onChange={(e) => setNomeCliente(e.target.value)}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="peca">Peça</Label>
+                      <Input
+                        id="peca"
+                        placeholder="Descrição"
+                        value={nomePeca}
+                        onChange={(e) => setNomePeca(e.target.value)}
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <Label htmlFor="material">Material</Label>
+                      <Select value={material} onValueChange={setMaterial}>
+                        <SelectTrigger id="material" className="mt-1">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="PLA">PLA</SelectItem>
+                          <SelectItem value="PETG">PETG</SelectItem>
+                          <SelectItem value="ABS">ABS</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="peso">Peso (g)</Label>
+                      <Input
+                        id="peso"
+                        type="number"
+                        value={peso || ""}
+                        onChange={(e) => setPeso(e.target.value ? parseFloat(e.target.value) : 0)}
+                        className="mt-1"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="preco-kg">Preço KG (R$)</Label>
+                      <Input
+                        id="preco-kg"
+                        type="number"
+                        step="0.01"
+                        value={precoKg || ""}
+                        onChange={(e) => setPrecoKg(e.target.value ? parseFloat(e.target.value) : 0)}
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <Label htmlFor="t-imp">Tempo Impressão (h)</Label>
+                      <Input
+                        id="t-imp"
+                        type="number"
+                        step="0.01"
+                        value={tImp || ""}
+                        onChange={(e) => setTImp(e.target.value ? parseFloat(e.target.value) : 0)}
+                        className="mt-1"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="t-pos-horas">Acabamento - Horas</Label>
+                      <Input
+                        id="t-pos-horas"
+                        type="number"
+                        placeholder="0"
+                        value={tPosHoras || ""}
+                        onChange={(e) => setTPosHoras(e.target.value ? parseFloat(e.target.value) : 0)}
+                        className="mt-1"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="t-pos-minutos">Minutos</Label>
+                      <Input
+                        id="t-pos-minutos"
+                        type="number"
+                        placeholder="0"
+                        min="0"
+                        max="59"
+                        value={tPosMinutos || ""}
+                        onChange={(e) => setTPosMinutos(e.target.value ? parseFloat(e.target.value) : 0)}
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="qtd">Quantidade</Label>
+                    <Input
+                      id="qtd"
+                      type="number"
+                      value={qtdKit || ""}
+                      onChange={(e) => setQtdKit(e.target.value ? parseFloat(e.target.value) : 1)}
+                      className="mt-1"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Mobile: Taxas e Impostos */}
+            <div className="lg:hidden mb-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">🛒 Taxas e Impostos</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="icms"
+                        checked={chkIcms}
+                        onCheckedChange={(checked) => setChkIcms(checked as boolean)}
+                      />
+                      <Label htmlFor="icms" className="cursor-pointer text-sm">
+                        ICMS (Estado)
+                      </Label>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="iss"
+                        checked={chkIss}
+                        onCheckedChange={(checked) => setChkIss(checked as boolean)}
+                      />
+                      <Label htmlFor="iss" className="cursor-pointer text-sm">
+                        ISS (5%)
+                      </Label>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="risco"
+                        checked={chkRisco}
+                        onCheckedChange={(checked) => setChkRisco(checked as boolean)}
+                      />
+                      <Label htmlFor="risco" className="cursor-pointer text-sm">
+                        10% Risco/Falha
+                      </Label>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="exclusivo"
+                        checked={exclusivo}
+                        onCheckedChange={(checked) => setExclusivo(checked as boolean)}
+                      />
+                      <Label htmlFor="exclusivo" className="cursor-pointer text-sm">
+                        💎 Modelagem Própria
+                      </Label>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="shopee"
+                        checked={mkpShopee}
+                        onCheckedChange={(checked) => setMkpShopee(checked as boolean)}
+                      />
+                      <Label htmlFor="shopee" className="cursor-pointer text-sm">
+                        Shopee (15%)
+                      </Label>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="ml"
+                        checked={mkpMl}
+                        onCheckedChange={(checked) => setMkpMl(checked as boolean)}
+                      />
+                      <Label htmlFor="ml" className="cursor-pointer text-sm">
+                        Mercado Livre (17%)
+                      </Label>
+                    </div>
+
+                    <div className="flex items-center space-x-2 col-span-2">
+                      <Checkbox
+                        id="frete"
+                        checked={chkFrete}
+                        onCheckedChange={(checked) => setChkFrete(checked as boolean)}
+                      />
+                      <Label htmlFor="frete" className="cursor-pointer text-sm">
+                        Incluir Frete
+                      </Label>
+                    </div>
+                  </div>
+
+                  {chkFrete && (
+                    <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                      <Label htmlFor="v-frete-modal">Valor Frete (R$)</Label>
+                      <Input
+                        id="v-frete-modal"
+                        type="number"
+                        step="0.01"
+                        value={vFrete || ""}
+                        onChange={(e) => setVFrete(e.target.value ? parseFloat(e.target.value) : 0)}
+                        className="mt-1"
+                      />
+                    </div>
+                  )}
+
+                  <div className="pt-4 border-t">
+                    <Label htmlFor="desc-kit">Desconto Kit (%): {descKit}%</Label>
+                    <Slider
+                      id="desc-kit"
+                      min={0}
+                      max={50}
+                      step={1}
+                      value={[descKit]}
+                      onValueChange={(value) => setDescKit(value[0])}
+                      className="mt-2"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Mobile: Botão CALCULAR */}
+            <div className="lg:hidden flex justify-center mb-6">
+              <Button
+                onClick={handleCalcular}
+                className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-6 text-lg font-bold rounded-lg w-full"
+              >
+                CALCULAR
+              </Button>
+            </div>
+
+            {/* Desktop: 3 colunas lado a lado */}
+            <div className="hidden lg:grid grid-cols-3 gap-6 mb-6" id="cards-container">
               {/* Coluna 1: Dados da Peça */}
               <Card>
                 <CardHeader>
@@ -453,15 +703,6 @@ export default function Home() {
               <Button
                 onClick={handleCalcular}
                 className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-6 text-lg font-bold rounded-lg"
-              >
-                CALCULAR
-              </Button>
-            </div>
-            
-            <div className="lg:hidden flex justify-center mt-6">
-              <Button
-                onClick={handleCalcular}
-                className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-6 text-lg font-bold rounded-lg w-full"
               >
                 CALCULAR
               </Button>
