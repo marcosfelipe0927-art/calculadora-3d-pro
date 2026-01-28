@@ -386,7 +386,7 @@ export default function Home() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8 flex justify-between items-center">
-          <h1 className={`text-4xl font-bold ${isDarkMode ? 'text-white' : 'text-orange-900'}`}>🚀 Calculadora 3D PRO</h1>
+          <h1 className={`text-4xl font-bold ${isDarkMode ? 'text-white' : 'text-orange-900'}`}>Calculadora 3D PRO V3.0</h1>
           <Button
             onClick={handleLogout}
             variant="outline"
@@ -482,7 +482,7 @@ export default function Home() {
                     </div>
 
                     <div>
-                      <Label htmlFor="preco-kg" className={isDarkMode ? 'text-white' : ''}>Preço KG (R$)</Label>
+                      <Label htmlFor="preco-kg" className={isDarkMode ? 'text-white' : ''}>KG (R$)</Label>
                       <Input
                         id="preco-kg"
                         type="number"
@@ -494,7 +494,7 @@ export default function Home() {
                     </div>
 
                     <div>
-                      <Label htmlFor="t-imp" className={isDarkMode ? 'text-white' : ''}>Tempo Impressão (HH:mm)</Label>
+                      <Label htmlFor="t-imp" className={isDarkMode ? 'text-white' : ''}>Impressão(h)</Label>
                       <TimeMaskInput
                         value={tImp.toString()}
                         onChange={(value) => setTImp(value ? parseFloat(value) : 0)}
@@ -504,7 +504,7 @@ export default function Home() {
                     </div>
 
                     <div>
-                      <Label htmlFor="t-pos" className={isDarkMode ? 'text-white' : ''}>Acabamento (HH:mm)</Label>
+                      <Label htmlFor="t-pos" className={isDarkMode ? 'text-white' : ''}>Refino(h)</Label>
                       <TimeMaskInput
                         value={(tPosHoras + tPosMinutos / 60).toString()}
                         onChange={(value) => {
