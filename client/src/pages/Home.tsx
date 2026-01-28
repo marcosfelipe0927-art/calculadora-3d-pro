@@ -31,13 +31,16 @@ import {
   isSameDevice,
   clearAuthFromLocalStorage,
 } from "@/lib/auth";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export default function Home() {
   // Estado de Autenticação
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [tokenInput, setTokenInput] = useState<string>("");
   const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
+  
+  // Ref para scroll automático
+  const resultadosRef = useRef<HTMLDivElement>(null);
 
   // Estado da Calculadora
   const [nomeCliente, setNomeCliente] = useState("");
@@ -198,6 +201,13 @@ export default function Home() {
     setResZap(resultado.resZap);
     setResCustoTotal(resultado.resCustoTotal);
     addToHistorico();
+    
+    // Scroll automatico para resultados em dispositivos moveis
+    if (window.innerWidth < 1024) {
+      setTimeout(() => {
+        resultadosRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    }
   };
 
   const copyToClipboard = (text: string) => {
@@ -611,7 +621,7 @@ export default function Home() {
               </Card>
 
               {/* Coluna 3: Resultados */}
-              <Card className={isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : ''}>
+              <Card ref={resultadosRef} className={isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : ''}>
                 <CardHeader>
                   <CardTitle className="text-lg">💰 Resultados</CardTitle>
                 </CardHeader>
