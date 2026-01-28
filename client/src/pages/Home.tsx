@@ -621,7 +621,7 @@ export default function Home() {
                       <div>
                         <Label className="text-sm text-gray-600">Preço Unitário</Label>
                         <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                          <p className="text-sm font-mono text-blue-900" style={{color: '#ffffff'}}>{resUn}</p>
+                          <p className="text-sm font-mono text-blue-900" style={{color: '#000000'}}>{resUn}</p>
                           <Button
                             size="sm"
                             variant="ghost"
