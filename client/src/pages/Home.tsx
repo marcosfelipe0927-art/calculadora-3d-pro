@@ -621,12 +621,12 @@ export default function Home() {
                       <div>
                         <Label className="text-sm text-gray-600">Preço Unitário</Label>
                         <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                          <p className="text-sm font-mono text-blue-900">{resUn}</p>
+                          <p className="text-sm font-mono text-blue-900" style={{color: '#ffffff'}}>{resUn}</p>
                           <Button
                             size="sm"
                             variant="ghost"
                             onClick={() => copyToClipboard(resUn)}
-                            className="mt-2 w-full"
+                            className="mt-2 w-full" style={{color: '#ff6900'}}
                           >
                             <Copy className="w-4 h-4 mr-2" />
                             Copiar
@@ -643,7 +643,7 @@ export default function Home() {
                               size="sm"
                               variant="ghost"
                               onClick={() => copyToClipboard(resKit)}
-                              className="mt-2 w-full"
+                              className="mt-2 w-full" style={{color: '#ff6900'}}
                             >
                               <Copy className="w-4 h-4 mr-2" />
                               Copiar
@@ -660,7 +660,7 @@ export default function Home() {
                             size="sm"
                             variant="ghost"
                             onClick={() => copyToClipboard(resCustoTotal)}
-                            className="mt-2 w-full"
+                            className="mt-2 w-full" style={{color: '#ff6900'}}
                           >
                             <Copy className="w-4 h-4 mr-2" />
                             Copiar
@@ -678,7 +678,7 @@ export default function Home() {
                             size="sm"
                             variant="ghost"
                             onClick={() => copyToClipboard(resZap)}
-                            className="mt-2 w-full"
+                            className="mt-2 w-full" style={{color: '#ff6900'}}
                           >
                             <Copy className="w-4 h-4 mr-2" />
                             Copiar
