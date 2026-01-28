@@ -497,7 +497,18 @@ export default function Home() {
                       <Label htmlFor="t-imp" className={isDarkMode ? 'text-white' : ''}>Impressão(h)</Label>
                       <TimeMaskInput
                         value={tImp.toString()}
-                        onChange={(value) => setTImp(value ? parseFloat(value) : 0)}
+                        onChange={(value) => {
+                          let decimalTime = 0;
+                          if (!value.includes(':')) {
+                            decimalTime = parseFloat(value) || 0;
+                          } else {
+                            const parts = value.split(':');
+                            const hours = parseFloat(parts[0]) || 0;
+                            const minutes = parseFloat(parts[1]) || 0;
+                            decimalTime = hours + minutes / 60;
+                          }
+                          setTImp(decimalTime);
+                        }}
                         placeholder="00:00"
                         isDarkMode={isDarkMode}
                       />
@@ -508,14 +519,17 @@ export default function Home() {
                       <TimeMaskInput
                         value={(tPosHoras + tPosMinutos / 60).toString()}
                         onChange={(value) => {
-                          if (value) {
-                            const totalHours = parseFloat(value);
-                            setTPosHoras(Math.floor(totalHoras));
-                            setTPosMinutos(Math.round((totalHoras % 1) * 60));
+                          let decimalTime = 0;
+                          if (!value.includes(':')) {
+                            decimalTime = parseFloat(value) || 0;
                           } else {
-                            setTPosHoras(0);
-                            setTPosMinutos(0);
+                            const parts = value.split(':');
+                            const hours = parseFloat(parts[0]) || 0;
+                            const minutes = parseFloat(parts[1]) || 0;
+                            decimalTime = hours + minutes / 60;
                           }
+                          setTPosHoras(Math.floor(decimalTime));
+                          setTPosMinutos(Math.round((decimalTime % 1) * 60));
                         }}
                         placeholder="00:00"
                         isDarkMode={isDarkMode}
