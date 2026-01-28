@@ -904,51 +904,53 @@ export default function Home() {
                             : 'bg-gray-50 border-gray-200'
                         }`}
                       >
-                        {/* Cabeçalho: Cliente - Peça | Data | Reorçar */}
+                        {/* Cabeçalho: Linha 1 - Cliente - Peça */}
+                        <div className="mb-2">
+                          <p className={`font-bold text-base ${
+                            isDarkMode ? 'text-white' : 'text-gray-900'
+                          }`}>
+                            {item.cliente} - {item.peca}
+                          </p>
+                        </div>
+
+                        {/* Cabeçalho: Linha 2 - Data e Reorçar */}
                         <div className="flex justify-between items-center mb-3">
-                          <div className="flex-1">
-                            <p className={`font-bold text-base ${
-                              isDarkMode ? 'text-white' : 'text-gray-900'
-                            }`}>
-                              {item.cliente} - {item.peca}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-3 ml-4">
-                            <p className={`text-xs ${
-                              isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                            }`}>
-                              {item.data}
-                            </p>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => reorcarItem(item)}
-                              className={`text-xs ${isDarkMode ? 'text-orange-400 hover:text-orange-300' : 'text-orange-600'}`}
-                              title="Reorcar este item"
-                            >
-                              Reorcar
-                            </Button>
-                          </div>
+                          <p className={`text-xs ${
+                            isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                          }`}>
+                            {item.data}
+                          </p>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => reorcarItem(item)}
+                            className={`text-xs py-0 h-auto ${isDarkMode ? 'text-orange-400 hover:text-orange-300' : 'text-orange-600'}`}
+                            title="Reorcar este item"
+                          >
+                            Reorcar
+                          </Button>
                         </div>
 
                         {/* Valores Sugeridos */}
                         <div className="mb-3 space-y-1">
-                          <p className={`text-sm font-bold ${
-                            isDarkMode ? 'text-orange-400' : 'text-orange-600'
-                          }`}>
-                            💰 Sugerido: {item.precoUnitario}
-                          </p>
-                          {item.quantidade > 1 && (
+                          {item.precoUnitario ? (
+                            <p className={`text-sm font-bold ${
+                              isDarkMode ? 'text-orange-400' : 'text-orange-600'
+                            }`}>
+                              💰 Sugerido: {item.precoUnitario}
+                            </p>
+                          ) : null}
+                          {item.quantidade > 1 && item.precoLote ? (
                             <p className={`text-sm font-semibold ${
                               isDarkMode ? 'text-green-400' : 'text-green-600'
                             }`}>
-                              📦 Lote ({item.quantidade}x): {item.precoLote}
+                              📦 {item.precoLote}
                             </p>
-                          )}
+                          ) : null}
                         </div>
 
                         {/* Rodapé: Tags técnicas */}
-                        <div className="flex justify-between items-center pt-3 border-t border-gray-600">
+                        <div className={`flex justify-between items-center pt-3 border-t ${isDarkMode ? 'border-gray-600' : 'border-gray-300'}`}>
                           <p className={`text-xs ${
                             isDarkMode ? 'text-gray-400' : 'text-gray-600'
                           }`}>
@@ -958,7 +960,7 @@ export default function Home() {
                             size="sm"
                             variant="ghost"
                             onClick={() => copyToClipboard(item.whatsapp)}
-                            className={`text-xs ${isDarkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600'}`}
+                            className={`text-xs py-0 h-auto ${isDarkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600'}`}
                           >
                             <Copy className="w-3 h-3" />
                           </Button>
