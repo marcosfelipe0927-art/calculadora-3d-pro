@@ -538,8 +538,17 @@ export default function Home() {
 
               {/* Coluna 2: Taxas e Impostos */}
               <Card className={isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : ''}>
-                <CardHeader>
-                  <CardTitle className="text-lg">🛒 Taxas e Impostos</CardTitle>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="text-lg">🛍 Taxas e Impostos</CardTitle>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={saveConfig}
+                    title="Salvar estes valores como padrao"
+                    className={isDarkMode ? 'text-gray-400 hover:text-white hover:bg-gray-700' : ''}
+                  >
+                    <Save className="w-4 h-4" />
+                  </Button>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-3">
