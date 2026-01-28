@@ -407,11 +407,11 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-5 gap-2">
+                  <div className="grid grid-cols-6 gap-2">
                     <div>
                       <Label htmlFor="material" className={isDarkMode ? 'text-white' : ''}>Material</Label>
                       <Select value={material} onValueChange={setMaterial}>
-                        <SelectTrigger id="material" className="mt-1">
+                        <SelectTrigger id="material" className="mt-1 w-full">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -429,7 +429,7 @@ export default function Home() {
                         type="number"
                         value={peso || ""}
                         onChange={(e) => setPeso(e.target.value ? parseFloat(e.target.value) : 0)}
-                        className="mt-1"
+                        className="mt-1 w-full"
                       />
                     </div>
 
@@ -441,7 +441,7 @@ export default function Home() {
                         step="0.01"
                         value={precoKg || ""}
                         onChange={(e) => setPrecoKg(e.target.value ? parseFloat(e.target.value) : 0)}
-                        className="mt-1"
+                        className="mt-1 w-full"
                       />
                     </div>
 
@@ -462,8 +462,8 @@ export default function Home() {
                         onChange={(value) => {
                           if (value) {
                             const totalHours = parseFloat(value);
-                            setTPosHoras(Math.floor(totalHours));
-                            setTPosMinutos(Math.round((totalHours % 1) * 60));
+                            setTPosHoras(Math.floor(totalHoras));
+                            setTPosMinutos(Math.round((totalHoras % 1) * 60));
                           } else {
                             setTPosHoras(0);
                             setTPosMinutos(0);
@@ -473,17 +473,17 @@ export default function Home() {
                         isDarkMode={isDarkMode}
                       />
                     </div>
-                  </div>
 
-                  <div>
-                    <Label htmlFor="qtd">Quantidade</Label>
-                    <Input
-                      id="qtd"
-                      type="number"
-                      value={qtdKit || ""}
-                      onChange={(e) => setQtdKit(e.target.value ? parseFloat(e.target.value) : 1)}
-                      className="mt-1"
-                    />
+                    <div>
+                      <Label htmlFor="qtd" className={isDarkMode ? 'text-white' : ''}>Quantidade</Label>
+                      <Input
+                        id="qtd"
+                        type="number"
+                        value={qtdKit || ""}
+                        onChange={(e) => setQtdKit(e.target.value ? parseFloat(e.target.value) : 1)}
+                        className="mt-1 w-full"
+                      />
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -746,11 +746,11 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-5 gap-2">
+                  <div className="grid grid-cols-6 gap-2">
                     <div>
                       <Label htmlFor="material" className={isDarkMode ? 'text-white' : ''}>Material</Label>
                       <Select value={material} onValueChange={setMaterial}>
-                        <SelectTrigger id="material" className="mt-1">
+                        <SelectTrigger id="material" className="mt-1 w-full">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -768,7 +768,7 @@ export default function Home() {
                         type="number"
                         value={peso || ""}
                         onChange={(e) => setPeso(e.target.value ? parseFloat(e.target.value) : 0)}
-                        className="mt-1"
+                        className="mt-1 w-full"
                       />
                     </div>
 
@@ -780,7 +780,7 @@ export default function Home() {
                         step="0.01"
                         value={precoKg || ""}
                         onChange={(e) => setPrecoKg(e.target.value ? parseFloat(e.target.value) : 0)}
-                        className="mt-1"
+                        className="mt-1 w-full"
                       />
                     </div>
 
@@ -801,8 +801,8 @@ export default function Home() {
                         onChange={(value) => {
                           if (value) {
                             const totalHours = parseFloat(value);
-                            setTPosHoras(Math.floor(totalHours));
-                            setTPosMinutos(Math.round((totalHours % 1) * 60));
+                            setTPosHoras(Math.floor(totalHoras));
+                            setTPosMinutos(Math.round((totalHoras % 1) * 60));
                           } else {
                             setTPosHoras(0);
                             setTPosMinutos(0);
@@ -812,17 +812,17 @@ export default function Home() {
                         isDarkMode={isDarkMode}
                       />
                     </div>
-                  </div>
 
-                  <div>
-                    <Label htmlFor="qtd">Quantidade</Label>
-                    <Input
-                      id="qtd"
-                      type="number"
-                      value={qtdKit || ""}
-                      onChange={(e) => setQtdKit(e.target.value ? parseFloat(e.target.value) : 1)}
-                      className="mt-1"
-                    />
+                    <div>
+                      <Label htmlFor="qtd" className={isDarkMode ? 'text-white' : ''}>Quantidade</Label>
+                      <Input
+                        id="qtd"
+                        type="number"
+                        value={qtdKit || ""}
+                        onChange={(e) => setQtdKit(e.target.value ? parseFloat(e.target.value) : 1)}
+                        className="mt-1 w-full"
+                      />
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -1059,7 +1059,7 @@ export default function Home() {
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <Label htmlFor="maquina">Máquina Padrão</Label>
+                    <Label htmlFor="maquina" className={isDarkMode ? 'text-white' : ''}>Máquina Padrão</Label>
                     <Select value={nomeMaquina} onValueChange={setNomeMaquina}>
                       <SelectTrigger id="maquina" className="mt-1">
                         <SelectValue />
@@ -1075,7 +1075,7 @@ export default function Home() {
                   </div>
 
                   <div>
-                    <Label htmlFor="custo-maq">Custo Máquina (R$/h)</Label>
+                    <Label htmlFor="custo-maq" className={isDarkMode ? 'text-white' : ''}>Custo Máquina (R$/h)</Label>
                     <Input
                       id="custo-maq"
                       type="number"
@@ -1087,7 +1087,7 @@ export default function Home() {
                   </div>
 
                   <div>
-                    <Label htmlFor="estado">Estado</Label>
+                    <Label htmlFor="estado" className={isDarkMode ? 'text-white' : ''}>Estado</Label>
                     <Select value={estado} onValueChange={setEstado}>
                       <SelectTrigger id="estado" className="mt-1">
                         <SelectValue />
@@ -1103,7 +1103,7 @@ export default function Home() {
                   </div>
 
                   <div>
-                    <Label htmlFor="v-hora">Sua Hora (R$)</Label>
+                    <Label htmlFor="v-hora" className={isDarkMode ? 'text-white' : ''}>Sua Hora (R$)</Label>
                     <Input
                       id="v-hora"
                       type="number"
@@ -1115,7 +1115,7 @@ export default function Home() {
                   </div>
 
                   <div>
-                    <Label htmlFor="mult-excl">Multiplicador Exclusivo</Label>
+                    <Label htmlFor="mult-excl" className={isDarkMode ? 'text-white' : ''}>Multiplicador Exclusivo</Label>
                     <Input
                       id="mult-excl"
                       type="number"
@@ -1150,7 +1150,7 @@ export default function Home() {
                   className={isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : ''}
                 />
                 {historico.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">Nenhum orçamento calculado ainda</p>
+                  <p className={`text-center py-8 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Nenhum orçamento calculado ainda</p>
                 ) : (
                   <div className="space-y-3">
                     {historico
