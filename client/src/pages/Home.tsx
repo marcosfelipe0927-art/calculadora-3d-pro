@@ -904,42 +904,64 @@ export default function Home() {
                             : 'bg-gray-50 border-gray-200'
                         }`}
                       >
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <p className={`font-semibold ${
+                        {/* Cabeçalho: Cliente - Peça | Data | Reorçar */}
+                        <div className="flex justify-between items-center mb-3">
+                          <div className="flex-1">
+                            <p className={`font-bold text-base ${
                               isDarkMode ? 'text-white' : 'text-gray-900'
                             }`}>
                               {item.cliente} - {item.peca}
                             </p>
-                            <p className={`text-sm ${
-                              isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                          </div>
+                          <div className="flex items-center gap-3 ml-4">
+                            <p className={`text-xs ${
+                              isDarkMode ? 'text-gray-400' : 'text-gray-500'
                             }`}>
                               {item.data}
                             </p>
-                            <p className={`text-sm mt-2 ${
-                              isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                            }`}>
-                              Unitário: {item.precoUnitario} | Lote: {item.precoLote || '-'} | Qtd: {item.quantidade}
-                            </p>
-                          </div>
-                          <div className="flex gap-2">
                             <Button
                               size="sm"
                               variant="ghost"
                               onClick={() => reorcarItem(item)}
-                              className={isDarkMode ? 'text-orange-400 hover:text-orange-300' : ''}
+                              className={`text-xs ${isDarkMode ? 'text-orange-400 hover:text-orange-300' : 'text-orange-600'}`}
                               title="Reorcar este item"
                             >
                               Reorcar
                             </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => copyToClipboard(item.whatsapp)}
-                            >
-                              <Copy className="w-4 h-4" />
-                            </Button>
                           </div>
+                        </div>
+
+                        {/* Valores Sugeridos */}
+                        <div className="mb-3 space-y-1">
+                          <p className={`text-sm font-bold ${
+                            isDarkMode ? 'text-orange-400' : 'text-orange-600'
+                          }`}>
+                            💰 Sugerido: {item.precoUnitario}
+                          </p>
+                          {item.quantidade > 1 && (
+                            <p className={`text-sm font-semibold ${
+                              isDarkMode ? 'text-green-400' : 'text-green-600'
+                            }`}>
+                              📦 Lote ({item.quantidade}x): {item.precoLote}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Rodapé: Tags técnicas */}
+                        <div className="flex justify-between items-center pt-3 border-t border-gray-600">
+                          <p className={`text-xs ${
+                            isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                          }`}>
+                            {item.material} | {item.peso}g | Qtd: {item.quantidade}
+                          </p>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => copyToClipboard(item.whatsapp)}
+                            className={`text-xs ${isDarkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600'}`}
+                          >
+                            <Copy className="w-3 h-3" />
+                          </Button>
                         </div>
                       </div>
                     ))}
