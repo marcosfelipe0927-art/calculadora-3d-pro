@@ -377,346 +377,8 @@ export default function Home() {
           </div>
 
           <TabsContent value="calculadora">
-            {/* Mobile: Dados da Peça */}
-            <div className="lg:hidden mb-6">
-              <Card className={isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : ''}>
-                <CardHeader>
-                  <CardTitle className="text-lg">📦 Dados da Peça</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <Label htmlFor="cliente" className={isDarkMode ? 'text-white' : ''}>Cliente</Label>
-                      <Input
-                        id="cliente"
-                        placeholder="Nome"
-                        value={nomeCliente}
-                        onChange={(e) => setNomeCliente(e.target.value)}
-                        className="mt-1"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="peca" className={isDarkMode ? 'text-white' : ''}>Peça</Label>
-                      <Input
-                        id="peca"
-                        placeholder="Descrição"
-                        value={nomePeca}
-                        onChange={(e) => setNomePeca(e.target.value)}
-                        className="mt-1"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-6 gap-2">
-                    <div>
-                      <Label htmlFor="material" className={isDarkMode ? 'text-white' : ''}>Material</Label>
-                      <Select value={material} onValueChange={setMaterial}>
-                        <SelectTrigger id="material" className="mt-1 w-full">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="PLA">PLA</SelectItem>
-                          <SelectItem value="PETG">PETG</SelectItem>
-                          <SelectItem value="ABS">ABS</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="peso" className={isDarkMode ? 'text-white' : ''}>Peso (g)</Label>
-                      <Input
-                        id="peso"
-                        type="number"
-                        value={peso || ""}
-                        onChange={(e) => setPeso(e.target.value ? parseFloat(e.target.value) : 0)}
-                        className="mt-1 w-full"
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="preco-kg" className={isDarkMode ? 'text-white' : ''}>Preço KG (R$)</Label>
-                      <Input
-                        id="preco-kg"
-                        type="number"
-                        step="0.01"
-                        value={precoKg || ""}
-                        onChange={(e) => setPrecoKg(e.target.value ? parseFloat(e.target.value) : 0)}
-                        className="mt-1 w-full"
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="t-imp" className={isDarkMode ? 'text-white' : ''}>Tempo Impressão (HH:mm)</Label>
-                      <TimeMaskInput
-                        value={tImp.toString()}
-                        onChange={(value) => setTImp(value ? parseFloat(value) : 0)}
-                        placeholder="00:00"
-                        isDarkMode={isDarkMode}
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="t-pos" className={isDarkMode ? 'text-white' : ''}>Acabamento (HH:mm)</Label>
-                      <TimeMaskInput
-                        value={(tPosHoras + tPosMinutos / 60).toString()}
-                        onChange={(value) => {
-                          if (value) {
-                            const totalHours = parseFloat(value);
-                            setTPosHoras(Math.floor(totalHoras));
-                            setTPosMinutos(Math.round((totalHoras % 1) * 60));
-                          } else {
-                            setTPosHoras(0);
-                            setTPosMinutos(0);
-                          }
-                        }}
-                        placeholder="00:00"
-                        isDarkMode={isDarkMode}
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="qtd" className={isDarkMode ? 'text-white' : ''}>Quantidade</Label>
-                      <Input
-                        id="qtd"
-                        type="number"
-                        value={qtdKit || ""}
-                        onChange={(e) => setQtdKit(e.target.value ? parseFloat(e.target.value) : 1)}
-                        className="mt-1 w-full"
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Mobile: Taxas e Impostos */}
-            <div className="lg:hidden mb-6">
-              <Card className={isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : ''}>
-                <CardHeader>
-                  <CardTitle className="text-lg">🛒 Taxas e Impostos</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="icms"
-                        checked={chkIcms}
-                        onCheckedChange={(checked) => setChkIcms(checked as boolean)}
-                      />
-                      <Label htmlFor="icms" className="cursor-pointer text-sm">
-                        ICMS (Estado)
-                      </Label>
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="iss"
-                        checked={chkIss}
-                        onCheckedChange={(checked) => setChkIss(checked as boolean)}
-                      />
-                      <Label htmlFor="iss" className="cursor-pointer text-sm">
-                        ISS (5%)
-                      </Label>
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="risco"
-                        checked={chkRisco}
-                        onCheckedChange={(checked) => setChkRisco(checked as boolean)}
-                      />
-                      <Label htmlFor="risco" className="cursor-pointer text-sm">
-                        10% Risco/Falha
-                      </Label>
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="exclusivo"
-                        checked={exclusivo}
-                        onCheckedChange={(checked) => setExclusivo(checked as boolean)}
-                      />
-                      <Label htmlFor="exclusivo" className="cursor-pointer text-sm">
-                        💎 Modelagem Própria
-                      </Label>
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="shopee"
-                        checked={mkpShopee}
-                        onCheckedChange={(checked) => setMkpShopee(checked as boolean)}
-                      />
-                      <Label htmlFor="shopee" className="cursor-pointer text-sm">
-                        Shopee (15%)
-                      </Label>
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="ml"
-                        checked={mkpMl}
-                        onCheckedChange={(checked) => setMkpMl(checked as boolean)}
-                      />
-                      <Label htmlFor="ml" className="cursor-pointer text-sm">
-                        Mercado Livre (17%)
-                      </Label>
-                    </div>
-
-                    <div className="flex items-center space-x-2 col-span-2">
-                      <Checkbox
-                        id="frete"
-                        checked={chkFrete}
-                        onCheckedChange={(checked) => setChkFrete(checked as boolean)}
-                      />
-                      <Label htmlFor="frete" className="cursor-pointer text-sm">
-                        Incluir Frete
-                      </Label>
-                    </div>
-                  </div>
-
-                  {chkFrete && (
-                    <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                      <Label htmlFor="v-frete-modal">Valor Frete (R$)</Label>
-                      <Input
-                        id="v-frete-modal"
-                        type="number"
-                        step="0.01"
-                        value={vFrete || ""}
-                        onChange={(e) => setVFrete(e.target.value ? parseFloat(e.target.value) : 0)}
-                        className="mt-1"
-                      />
-                    </div>
-                  )}
-
-                  <div className="pt-4 border-t">
-                    <Label htmlFor="desc-kit">Desconto Kit (%): {descKit}%</Label>
-                    <Slider
-                      id="desc-kit"
-                      min={0}
-                      max={50}
-                      step={1}
-                      value={[descKit]}
-                      onValueChange={(value) => setDescKit(value[0])}
-                      className="mt-2"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Mobile: Botão CALCULAR */}
-            <div className="lg:hidden flex justify-center mb-6">
-              <Button
-                onClick={handleCalcular}
-                className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-6 text-lg font-bold rounded-lg w-full"
-              >
-                CALCULAR
-              </Button>
-            </div>
-
-            {/* Mobile: Resultados */}
-            <div className="lg:hidden mb-6">
-              <Card className={isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : ''}>
-                <CardHeader>
-                  <CardTitle className="text-lg">💰 Resultados</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {resUn && (
-                    <>
-                      <div>
-                        <Label className="text-sm" style={{color: isDarkMode ? '#ffffff' : '#4b5563'}}>Preço Unitário</Label>
-                        <div className={`mt-2 p-3 rounded-lg border ${isDarkMode ? 'bg-blue-900 border-blue-700' : 'bg-blue-50 border-blue-200'}`}>
-                          <p className={`text-sm font-mono ${isDarkMode ? 'text-blue-100' : 'text-gray-900'}`}>{resUn}</p>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => copyToClipboard(resUn)}
-                            className="mt-2 w-full" style={{color: '#f54900'}}
-                          >
-                            <Copy className="w-4 h-4 mr-2" />
-                            Copiar
-                          </Button>
-                        </div>
-                      </div>
-
-                      {qtdKit > 1 && (
-                        <div>
-                          <Label className="text-sm" style={{color: isDarkMode ? '#ffffff' : '#4b5563'}}>Preço Total (Lote)</Label>
-                          <div className={`mt-2 p-3 rounded-lg border ${isDarkMode ? 'bg-green-900 border-green-700' : 'bg-green-50 border-green-200'}`}>
-                            <p className={`text-sm font-mono ${isDarkMode ? 'text-green-100' : 'text-gray-900'}`}>{resKit}</p>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => copyToClipboard(resKit)}
-                              className="mt-2 w-full" style={{color: '#f54900'}}
-                            >
-                              <Copy className="w-4 h-4 mr-2" />
-                              Copiar
-                            </Button>
-                          </div>
-                        </div>
-                      )}
-
-                      <div>
-                        <Label className="text-sm" style={{color: isDarkMode ? '#ffffff' : '#4b5563'}}>Custos Totais</Label>
-                        <div className={`mt-2 p-3 rounded-lg border ${isDarkMode ? 'bg-yellow-900 border-yellow-700' : 'bg-yellow-50 border-yellow-200'}`}>
-                          <p className={`text-sm font-mono ${isDarkMode ? 'text-yellow-100' : 'text-gray-900'}`}>{resCustoTotal}</p>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => copyToClipboard(resCustoTotal)}
-                            className="mt-2 w-full" style={{color: '#f54900'}}
-                          >
-                            <Copy className="w-4 h-4 mr-2" />
-                            Copiar
-                          </Button>
-                        </div>
-                      </div>
-
-                      <div>
-                        <Label className="text-sm" style={{color: isDarkMode ? '#ffffff' : '#4b5563'}}>WhatsApp</Label>
-                        <div className={`mt-2 p-3 rounded-lg border ${isDarkMode ? 'bg-purple-900 border-purple-700' : 'bg-purple-50 border-purple-200'}`}>
-                          <p className={`text-xs font-mono whitespace-pre-wrap ${isDarkMode ? 'text-purple-100' : 'text-gray-900'}`}>
-                            {resZap}
-                          </p>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => copyToClipboard(resZap)}
-                            className="mt-2 w-full" style={{color: '#f44900'}}
-                          >
-                            <Copy className="w-4 h-4 mr-2" />
-                            Copiar
-                          </Button>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2">
-                        <Button
-                          onClick={shareWhatsApp}
-                          className="w-full bg-green-500 hover:bg-green-600 text-white"
-                        >
-                          <Share2 className="w-4 h-4 mr-2" />
-                          WhatsApp
-                        </Button>
-                        <Button
-                          onClick={downloadOrcamento}
-                          variant="outline"
-                          className="w-full"
-                        >
-                          <Download className="w-4 h-4 mr-2" />
-                          Baixar
-                        </Button>
-                      </div>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Desktop: 3 colunas lado a lado */}
-            <div className="hidden lg:grid grid-cols-3 gap-6 mb-6" id="cards-container">
+            {/* Grid Único Responsivo: 1 coluna mobile, 3 colunas desktop */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6" id="cards-container">
               {/* Coluna 1: Dados da Peça */}
               <Card className={isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : ''}>
                 <CardHeader>
@@ -746,7 +408,7 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-6 gap-2">
+                  <div className="grid grid-cols-3 gap-2">
                     <div>
                       <Label htmlFor="material" className={isDarkMode ? 'text-white' : ''}>Material</Label>
                       <Select value={material} onValueChange={setMaterial}>
@@ -938,6 +600,13 @@ export default function Home() {
                       className="mt-2"
                     />
                   </div>
+
+                  <Button
+                    onClick={handleCalcular}
+                    className="w-full bg-orange-500 hover:bg-orange-600 text-white py-6 text-lg font-bold rounded-lg mt-4"
+                  >
+                    CALCULAR
+                  </Button>
                 </CardContent>
               </Card>
 
@@ -947,7 +616,7 @@ export default function Home() {
                   <CardTitle className="text-lg">💰 Resultados</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {resUn && (
+                  {resUn ? (
                     <>
                       <div>
                         <Label className="text-sm text-gray-600">Preço Unitário</Label>
@@ -1035,18 +704,16 @@ export default function Home() {
                         </Button>
                       </div>
                     </>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <div className="text-4xl mb-3">📊</div>
+                      <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        Preencha os dados e clique em CALCULAR para ver os resultados
+                      </p>
+                    </div>
                   )}
                 </CardContent>
               </Card>
-            </div>
-
-            <div className="hidden lg:flex justify-center">
-              <Button
-                onClick={handleCalcular}
-                className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-6 text-lg font-bold rounded-lg"
-              >
-                CALCULAR
-              </Button>
             </div>
           </TabsContent>
 
