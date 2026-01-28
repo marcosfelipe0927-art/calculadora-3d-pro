@@ -12,7 +12,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Copy, Download, Share2, Clock, Lock } from "lucide-react";
+import { Copy, Download, Share2, Clock, Lock, Save } from "lucide-react";
 import { TimeMaskInput } from "@/components/TimeMaskInput";
 import { toast } from "sonner";
 import {
@@ -236,6 +236,34 @@ export default function Home() {
     toast.success('Configuracoes salvas!');
   };
 
+  const savePecaPreferences = () => {
+    const pecaPreferences = {
+      material,
+      peso,
+      precoKg,
+      tImp,
+      tPosHoras,
+      tPosMinutos,
+      qtdKit,
+    };
+    localStorage.setItem('calculadora_peca_preferences', JSON.stringify(pecaPreferences));
+    toast.success('Preferencias de peca salvas!');
+  };
+
+  const loadPecaPreferences = () => {
+    const saved = localStorage.getItem('calculadora_peca_preferences');
+    if (saved) {
+      const prefs = JSON.parse(saved);
+      setMaterial(prefs.material || 'PLA');
+      setPeso(prefs.peso || 0);
+      setPrecoKg(prefs.precoKg || 69.99);
+      setTImp(prefs.tImp || 0);
+      setTPosHoras(prefs.tPosHoras || 0);
+      setTPosMinutos(prefs.tPosMinutos || 0);
+      setQtdKit(prefs.qtdKit || 1);
+    }
+  };
+
   const reorcarItem = (item: any) => {
     setNomeCliente(item.cliente === 'Cliente' ? '' : item.cliente);
     setNomePeca(item.peca === 'Peca' ? '' : item.peca);
@@ -391,8 +419,17 @@ export default function Home() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6" id="cards-container">
               {/* Coluna 1: Dados da Peça */}
               <Card className={isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : ''}>
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle className="text-lg">📦 Dados da Peça</CardTitle>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={savePecaPreferences}
+                    title="Salvar estes valores como padrao"
+                    className={isDarkMode ? 'text-gray-400 hover:text-white hover:bg-gray-700' : ''}
+                  >
+                    <Save className="w-4 h-4" />
+                  </Button>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-2">
