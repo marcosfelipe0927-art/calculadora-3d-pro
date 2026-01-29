@@ -110,8 +110,10 @@ export interface ParametrosCalculo {
 
 // Interface para o resultado
 export interface ResultadoCalculo {
-  resUn: string;
-  resKit: string;
+  resUn: string;  // Apenas valor sugerido (para histórico)
+  resKit: string; // Apenas valor sugerido (para histórico)
+  resUnCompleto: string;  // Mínimo | Sugerido | Premium (para resultados)
+  resKitCompleto: string; // Mínimo | Sugerido | Premium (para resultados)
   resZap: string;
   valoresUnitarios: number[];
   valoresKit: number[];
@@ -264,9 +266,15 @@ export function calcularPro(params: ParametrosCalculo): ResultadoCalculo {
 📅 Entrega estimada: ${dataFormatada}
 ⚙️ ${material} | ${nomeMaquina}`;
 
+  // Strings com os três valores para exibição nos resultados
+  const resUnCompleto = `Mínimo: R$ ${vFinais[0].toFixed(2)} | Sugerido: R$ ${vFinais[1].toFixed(2)} | Premium: R$ ${vFinais[2].toFixed(2)}`;
+  const resKitCompleto = `Mínimo: R$ ${kFinais[0].toFixed(2)} | Sugerido: R$ ${kFinais[1].toFixed(2)} | Premium: R$ ${kFinais[2].toFixed(2)}`;
+
   return {
     resUn,
     resKit,
+    resUnCompleto,
+    resKitCompleto,
     resZap: txt,
     valoresUnitarios: vFinais,
     valoresKit: kFinais,

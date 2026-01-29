@@ -73,6 +73,8 @@ export default function Home() {
 
   const [resUn, setResUn] = useState<string>("");
   const [resKit, setResKit] = useState<string>("");
+  const [resUnCompleto, setResUnCompleto] = useState<string>("");
+  const [resKitCompleto, setResKitCompleto] = useState<string>("");
   const [resZap, setResZap] = useState<string>("");
   const [resCustoTotal, setResCustoTotal] = useState<string>("");
   const [historico, setHistorico] = useState<any[]>([]);
@@ -198,6 +200,8 @@ export default function Home() {
     const resultado = calcularPro(params);
     setResUn(resultado.resUn);
     setResKit(resultado.resKit);
+    setResUnCompleto(resultado.resUnCompleto);
+    setResKitCompleto(resultado.resKitCompleto);
     setResZap(resultado.resZap);
     setResCustoTotal(resultado.resCustoTotal);
     addToHistorico(resultado);
@@ -691,11 +695,11 @@ export default function Home() {
                       <div>
                         <Label className="text-sm text-gray-600">Preço Unitário</Label>
                         <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                          <p className="text-sm font-mono text-blue-900" style={{color: '#000000'}}>{resUn}</p>
+                          <p className="text-sm font-mono text-blue-900" style={{color: '#000000'}}>{resUnCompleto}</p>
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => copyToClipboard(resUn)}
+                            onClick={() => copyToClipboard(resUnCompleto)}
                             className="mt-2 w-full" style={{color: '#ff6900'}}
                           >
                             <Copy className="w-4 h-4 mr-2" />
@@ -708,11 +712,11 @@ export default function Home() {
                         <div>
                           <Label className="text-sm text-gray-600">Preço Total (Lote)</Label>
                           <div className="mt-2 p-3 bg-green-50 rounded-lg border border-green-200">
-                            <p className="text-sm font-mono text-green-900">{resKit}</p>
+                            <p className="text-sm font-mono text-green-900">{resKitCompleto}</p>
                             <Button
                               size="sm"
                               variant="ghost"
-                              onClick={() => copyToClipboard(resKit)}
+                              onClick={() => copyToClipboard(resKitCompleto)}
                               className="mt-2 w-full" style={{color: '#ff6900'}}
                             >
                               <Copy className="w-4 h-4 mr-2" />
