@@ -12,7 +12,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Copy, Download, Share2, Clock, Lock, Save, Eye, EyeOff } from "lucide-react";
+import { Copy, Download, Share2, Clock, Lock, Save, Eye, EyeOff, Edit2, Trash2, AlertCircle } from "lucide-react";
 import { TimeMaskInput } from "@/components/TimeMaskInput";
 import { toast } from "sonner";
 import {
@@ -82,6 +82,11 @@ export default function Home() {
   const [resCustoTotal, setResCustoTotal] = useState<string>("");
   const [historico, setHistorico] = useState<any[]>([]);
   const [buscaHistorico, setBuscaHistorico] = useState<string>("");
+  
+  // Estado de Insumos
+  const [materiais, setMateriais] = useState<any[]>([]);
+  const [novoMaterial, setNovoMaterial] = useState({ nome: '', marca: '', precoPago: 0, pesoTotal: 0 });
+  const [abaterDoEstoque, setAbaterDoEstoque] = useState<boolean>(true);
 
   useEffect(() => {
     // Verificar autenticacao no carregamento
@@ -129,6 +134,12 @@ export default function Home() {
     
     if (savedHistorico) {
       setHistorico(JSON.parse(savedHistorico));
+    }
+    
+    // Carregar materiais
+    const savedMateriais = localStorage.getItem('calculadora_materiais');
+    if (savedMateriais) {
+      setMateriais(JSON.parse(savedMateriais));
     }
 
     // Carregar userType e contador de cálculos com reset automático
@@ -205,10 +216,60 @@ export default function Home() {
     setIsAuthenticated(false);
     setUserType('guest');
     localStorage.setItem('userType', 'guest');
-    // NÃO apagar calculos_realizados - manter para anti-burlas
-    // NÃO apagar data dos cálculos - manter para verificação de limite semanal
     setTokenInput("");
     toast.success("Desconectado com sucesso");
+  };
+  
+  const handleSalvarMaterial = () => {
+    if (userType === 'guest') {
+      toast.error('Para gerenciar seu estoque, usar o abate automatico e salvar seus materiais, adquira a versao PRO!');
+      return;
+    }
+    if (!novoMaterial.nome.trim() || !novoMaterial.marca.trim() || novoMaterial.pesoTotal <= 0) {
+      toast.error('Preencha todos os campos corretamente');
+      return;
+    }
+    const novoId = Date.now().toString();
+    const materialNovo = {
+      id: novoId,
+      nome: novoMaterial.nome,
+      marca: novoMaterial.marca,
+      precoPago: novoMaterial.precoPago,
+      pesoTotal: novoMaterial.pesoTotal,
+      pesoRestante: novoMaterial.pesoTotal,
+      emUso: true,
+      dataCadastro: new Date().toLocaleDateString('pt-BR')
+    };
+    const materiaisAtualizados = materiais.map(m => ({ ...m, emUso: false }));
+    materiaisAtualizados.push(materialNovo);
+    setMateriais(materiaisAtualizados);
+    localStorage.setItem('calculadora_materiais', JSON.stringify(materiaisAtualizados));
+    setMaterial(novoMaterial.nome);
+    setPrecoKg(novoMaterial.precoPago / (novoMaterial.pesoTotal / 1000));
+    setNovoMaterial({ nome: '', marca: '', precoPago: 0, pesoTotal: 0 });
+    toast.success('Material salvo com sucesso!');
+  };
+  
+  const handleAtivarMaterial = (id: string) => {
+    const materiaisAtualizados = materiais.map(m => ({
+      ...m,
+      emUso: m.id === id
+    }));
+    setMateriais(materiaisAtualizados);
+    localStorage.setItem('calculadora_materiais', JSON.stringify(materiaisAtualizados));
+    const materialAtivo = materiaisAtualizados.find(m => m.id === id);
+    if (materialAtivo) {
+      setMaterial(materialAtivo.nome);
+      setPrecoKg(materialAtivo.precoPago / (materialAtivo.pesoTotal / 1000));
+      toast.success('Material ativado!');
+    }
+  };
+  
+  const handleDeletarMaterial = (id: string) => {
+    const materiaisAtualizados = materiais.filter(m => m.id !== id);
+    setMateriais(materiaisAtualizados);
+    localStorage.setItem('calculadora_materiais', JSON.stringify(materiaisAtualizados));
+    toast.success('Material removido!');
   };
 
   const handleCalcular = () => {
@@ -501,8 +562,9 @@ export default function Home() {
 
         <Tabs defaultValue="calculadora" className={`w-full ${isDarkMode ? 'dark' : ''}`}>
           <div className="flex justify-center items-center gap-4 mb-8">
-            <TabsList className="grid grid-cols-3">
+            <TabsList className="grid grid-cols-4">
               <TabsTrigger value="calculadora">📊 Calcular</TabsTrigger>
+              <TabsTrigger value="insumos">📦 Insumos</TabsTrigger>
               <TabsTrigger value="configuracoes">⚙️ Ajustes</TabsTrigger>
               <TabsTrigger value="historico">⏱️ Histórico</TabsTrigger>
             </TabsList>
@@ -900,6 +962,131 @@ export default function Home() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="insumos">
+            <Card className={isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : ''}>
+              <CardHeader>
+                <CardTitle className={isDarkMode ? 'text-white' : ''}>📦 Gerenciar Insumos</CardTitle>
+                <CardDescription className={isDarkMode ? 'text-gray-400' : ''}>Cadastre e gerencie seus materiais de impressao</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Formulario de Novo Material */}
+                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <h3 className="font-semibold text-blue-900 mb-4">Adicionar Novo Material</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="material-nome" className={isDarkMode ? 'text-white' : ''}>Nome do Material</Label>
+                      <Input
+                        id="material-nome"
+                        placeholder="Ex: PLA"
+                        value={novoMaterial.nome}
+                        onChange={(e) => setNovoMaterial({...novoMaterial, nome: e.target.value})}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="material-marca" className={isDarkMode ? 'text-white' : ''}>Marca</Label>
+                      <Input
+                        id="material-marca"
+                        placeholder="Ex: Bambu Lab"
+                        value={novoMaterial.marca}
+                        onChange={(e) => setNovoMaterial({...novoMaterial, marca: e.target.value})}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="material-preco" className={isDarkMode ? 'text-white' : ''}>Preco Pago (R$)</Label>
+                      <Input
+                        id="material-preco"
+                        type="number"
+                        step="0.01"
+                        placeholder="0.00"
+                        value={novoMaterial.precoPago || ''}
+                        onChange={(e) => setNovoMaterial({...novoMaterial, precoPago: parseFloat(e.target.value) || 0})}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="material-peso" className={isDarkMode ? 'text-white' : ''}>Peso Total (g)</Label>
+                      <Input
+                        id="material-peso"
+                        type="number"
+                        placeholder="1000"
+                        value={novoMaterial.pesoTotal || ''}
+                        onChange={(e) => setNovoMaterial({...novoMaterial, pesoTotal: parseFloat(e.target.value) || 0})}
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+                  <Button
+                    onClick={handleSalvarMaterial}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white mt-4"
+                  >
+                    Salvar Material
+                  </Button>
+                </div>
+
+                {/* Lista de Materiais */}
+                <div>
+                  <h3 className="font-semibold mb-4">Materiais Cadastrados</h3>
+                  {materiais.length === 0 ? (
+                    <p className={`text-center py-8 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      Nenhum material cadastrado ainda
+                    </p>
+                  ) : (
+                    <div className="space-y-3">
+                      {materiais.map((mat) => {
+                        const critico = mat.pesoRestante < 100;
+                        return (
+                          <div
+                            key={mat.id}
+                            className={`p-4 rounded-lg border ${
+                              isDarkMode
+                                ? 'bg-gray-700 border-gray-600'
+                                : 'bg-gray-50 border-gray-200'
+                            } ${critico ? 'border-red-500 border-2' : ''}`}
+                          >
+                            <div className="flex justify-between items-start mb-2">
+                              <div className="flex-1">
+                                <p className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                                  {mat.nome} - {mat.marca}
+                                  {mat.emUso && <span className="ml-2 text-green-500 font-bold">✓ Em Uso</span>}
+                                  {critico && <span className="ml-2 text-red-500 font-bold">⚠ Critico</span>}
+                                </p>
+                                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                  Peso: {mat.pesoRestante}g / {mat.pesoTotal}g | Preco: R$ {mat.precoPago.toFixed(2)}
+                                </p>
+                              </div>
+                              <div className="flex gap-2">
+                                {!mat.emUso && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleAtivarMaterial(mat.id)}
+                                    className={isDarkMode ? 'bg-gray-600 border-gray-500 text-white hover:bg-gray-500' : ''}
+                                  >
+                                    Ativar
+                                  </Button>
+                                )}
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handleDeletarMaterial(mat.id)}
+                                  className={isDarkMode ? 'text-red-400 hover:bg-gray-600' : 'text-red-600'}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="configuracoes">
