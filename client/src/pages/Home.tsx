@@ -12,7 +12,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Copy, Download, Share2, Clock, Lock, Save } from "lucide-react";
+import { Copy, Download, Share2, Clock, Lock, Save, Eye, EyeOff } from "lucide-react";
 import { TimeMaskInput } from "@/components/TimeMaskInput";
 import { toast } from "sonner";
 import {
@@ -38,6 +38,9 @@ export default function Home() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [tokenInput, setTokenInput] = useState<string>("");
   const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
+  const [userType, setUserType] = useState<'guest' | 'pro'>('guest');
+  const [calculosRealizados, setCalculosRealizados] = useState<number>(0);
+  const [showToken, setShowToken] = useState<boolean>(false);
   
   // Ref para scroll automático
   const resultadosRef = useRef<HTMLDivElement>(null);
@@ -127,6 +130,18 @@ export default function Home() {
     if (savedHistorico) {
       setHistorico(JSON.parse(savedHistorico));
     }
+
+    // Carregar userType e contador de cálculos
+    const savedUserType = localStorage.getItem('userType') as 'guest' | 'pro' | null;
+    const savedCalculos = localStorage.getItem('calculos_realizados');
+    
+    if (savedUserType) {
+      setUserType(savedUserType);
+    }
+    
+    if (savedCalculos) {
+      setCalculosRealizados(parseInt(savedCalculos, 10));
+    }
   }, []);
 
   const handleTokenLogin = () => {
@@ -159,6 +174,10 @@ export default function Home() {
 
     saveAuthToLocalStorage(tokenInput, currentFingerprint);
     setIsAuthenticated(true);
+    setUserType('pro');
+    localStorage.setItem('userType', 'pro');
+    localStorage.setItem('calculos_realizados', '0');
+    setCalculosRealizados(0);
     setTokenInput("");
     toast.success("Acesso concedido!");
   };
@@ -166,11 +185,21 @@ export default function Home() {
   const handleLogout = () => {
     clearAuthFromLocalStorage();
     setIsAuthenticated(false);
+    setUserType('guest');
+    localStorage.setItem('userType', 'guest');
+    localStorage.setItem('calculos_realizados', '0');
+    setCalculosRealizados(0);
     setTokenInput("");
     toast.success("Desconectado com sucesso");
   };
 
   const handleCalcular = () => {
+    // Verificar limite de cálculos para usuários guest
+    if (userType === 'guest' && calculosRealizados >= 3) {
+      toast.error('Limite diário de teste atingido (3/3). Insira um token para acesso ilimitado!');
+      return;
+    }
+
     const params: ParametrosCalculo = {
       material,
       peso,
@@ -205,6 +234,18 @@ export default function Home() {
     setResZap(resultado.resZap);
     setResCustoTotal(resultado.resCustoTotal);
     addToHistorico(resultado);
+    
+    // Incrementar contador para usuários guest
+    if (userType === 'guest') {
+      const novoContador = calculosRealizados + 1;
+      setCalculosRealizados(novoContador);
+      localStorage.setItem('calculos_realizados', novoContador.toString());
+      
+      // Mostrar aviso se chegou perto do limite
+      if (novoContador === 2) {
+        toast.info('Você já usou 2 de 3 cálculos de teste. Insira um token para acesso ilimitado!');
+      }
+    }
     
     // Scroll automatico para resultados em dispositivos moveis
     if (window.innerWidth < 1024) {
@@ -359,21 +400,45 @@ export default function Home() {
           <CardContent className="space-y-4">
             <div>
               <Label htmlFor="token" className={isDarkMode ? 'text-white' : ''}>Token de Acesso</Label>
-              <Input
-                id="token"
-                type="password"
-                placeholder="Digite seu token"
-                value={tokenInput}
-                onChange={(e) => setTokenInput(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleTokenLogin()}
-                className={`mt-1 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : ''}`}
-              />
+              <div className="relative">
+                <Input
+                  id="token"
+                  type={showToken ? 'text' : 'password'}
+                  placeholder="Digite seu token"
+                  value={tokenInput}
+                  onChange={(e) => setTokenInput(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleTokenLogin()}
+                  className={`mt-1 pr-10 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : ''}`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowToken(!showToken)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                >
+                  {showToken ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
             <Button
               onClick={handleTokenLogin}
               className="w-full bg-orange-500 hover:bg-orange-600 text-white"
             >
               Acessar
+            </Button>
+            <Button
+              onClick={() => {
+                setIsAuthenticated(true);
+                setUserType('guest');
+                localStorage.setItem('userType', 'guest');
+                if (!localStorage.getItem('calculos_realizados')) {
+                  localStorage.setItem('calculos_realizados', '0');
+                }
+                toast.success('Modo de teste ativado! Você tem 3 cálculos grátis.');
+              }}
+              variant="outline"
+              className="w-full"
+            >
+              Teste Grátis
             </Button>
           </CardContent>
         </Card>
