@@ -314,6 +314,26 @@ export default function Home() {
     setResCustoTotal(resultado.resCustoTotal);
     addToHistorico(resultado);
     
+    // Abater do estoque se PRO e checkbox marcado
+    if (userType === 'pro' && abaterDoEstoque && materiais.length > 0) {
+      const materialAtivo = materiais.find(m => m.emUso);
+      if (materialAtivo && peso > 0) {
+        const novoSaldo = materialAtivo.pesoRestante - peso;
+        if (novoSaldo < 0) {
+          toast.error('Peso insuficiente no material ativo!');
+        } else {
+          const materiaisAtualizados = materiais.map(m => 
+            m.id === materialAtivo.id 
+              ? { ...m, pesoRestante: novoSaldo }
+              : m
+          );
+          setMateriais(materiaisAtualizados);
+          localStorage.setItem('calculadora_materiais', JSON.stringify(materiaisAtualizados));
+          toast.success(`Abatido ${peso}g do material ${materialAtivo.nome}`);
+        }
+      }
+    }
+    
     // Incrementar contador para usuários guest
     if (userType === 'guest') {
       const novoContador = calculosRealizados + 1;
@@ -643,6 +663,18 @@ export default function Home() {
                         onChange={(e) => setPeso(e.target.value ? parseFloat(e.target.value) : 0)}
                         className="mt-1 w-full"
                       />
+                      {userType === 'pro' && materiais.length > 0 && (() => {
+                        const materialAtivo = materiais.find(m => m.emUso);
+                        if (materialAtivo && materialAtivo.pesoRestante < 100) {
+                          return (
+                            <div className="mt-2 p-2 bg-red-100 border border-red-400 rounded text-red-700 text-sm flex items-center gap-2">
+                              <AlertCircle className="w-4 h-4" />
+                              Atencao: Estoque de {materialAtivo.nome} esta acabando!
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
                     </div>
 
                     <div>
@@ -834,6 +866,28 @@ export default function Home() {
                       className="mt-2"
                     />
                   </div>
+
+                  {userType === 'pro' && materiais.length > 0 && (
+                    <div className="flex items-center space-x-2 pt-4">
+                      <Checkbox
+                        id="abater"
+                        checked={abaterDoEstoque}
+                        onCheckedChange={(checked) => setAbaterDoEstoque(checked as boolean)}
+                      />
+                      <Label htmlFor="abater" className="cursor-pointer text-sm">
+                        Abater do estoque
+                      </Label>
+                    </div>
+                  )}
+                  
+                  {userType === 'guest' && (
+                    <div className="flex items-center space-x-2 pt-4 opacity-50 cursor-not-allowed">
+                      <Checkbox id="abater-guest" disabled />
+                      <Label htmlFor="abater-guest" className="cursor-not-allowed text-sm text-gray-500">
+                        Abater do estoque (Exclusivo PRO)
+                      </Label>
+                    </div>
+                  )}
 
                   <Button
                     onClick={handleCalcular}
@@ -1054,7 +1108,11 @@ export default function Home() {
                                   {mat.emUso && <span className="ml-2 text-green-500 font-bold">✓ Em Uso</span>}
                                   {critico && <span className="ml-2 text-red-500 font-bold">⚠ Critico</span>}
                                 </p>
-                                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                <p className={`text-sm ${
+                                  critico 
+                                    ? 'text-red-500 font-bold' 
+                                    : isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                                }`}>
                                   Peso: {mat.pesoRestante}g / {mat.pesoTotal}g | Preco: R$ {mat.precoPago.toFixed(2)}
                                 </p>
                               </div>
