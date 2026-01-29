@@ -1,0 +1,14 @@
+.git
+.gitignore
+.manus-logs
+node_modules
+pnpm-lock.yaml
+server
+shared
+patches
+.prettierignore
+.prettierrc
+components.json
+tsconfig.json
+tsconfig.node.json
+vite.config.ts
