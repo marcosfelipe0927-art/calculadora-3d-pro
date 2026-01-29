@@ -904,66 +904,42 @@ export default function Home() {
                             : 'bg-gray-50 border-gray-200'
                         }`}
                       >
-                        {/* Cabeçalho: Linha 1 - Cliente - Peça */}
-                        <div className="mb-2">
-                          <p className={`font-bold text-base ${
-                            isDarkMode ? 'text-white' : 'text-gray-900'
-                          }`}>
-                            {item.cliente} - {item.peca}
-                          </p>
-                        </div>
-
-                        {/* Cabeçalho: Linha 2 - Data e Reorçar */}
-                        <div className="flex justify-between items-center mb-3">
-                          <p className={`text-xs ${
-                            isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                          }`}>
-                            {item.data}
-                          </p>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => reorcarItem(item)}
-                            className={`text-xs py-0 h-auto ${isDarkMode ? 'text-orange-400 hover:text-orange-300' : 'text-orange-600'}`}
-                            title="Reorcar este item"
-                          >
-                            Reorcar
-                          </Button>
-                        </div>
-
-                        {/* Valores Sugeridos */}
-                        <div className="mb-3 space-y-1">
-                          {item.precoUnitario ? (
-                            <p className={`text-sm font-bold ${
-                              isDarkMode ? 'text-orange-400' : 'text-orange-600'
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className={`font-semibold ${
+                              isDarkMode ? 'text-white' : 'text-gray-900'
                             }`}>
-                              💰 Sugerido: {item.precoUnitario}
+                              {item.cliente} - {item.peca}
                             </p>
-                          ) : null}
-                          {item.quantidade > 1 && item.precoLote ? (
-                            <p className={`text-sm font-semibold ${
-                              isDarkMode ? 'text-green-400' : 'text-green-600'
+                            <p className={`text-sm ${
+                              isDarkMode ? 'text-gray-400' : 'text-gray-600'
                             }`}>
-                              📦 {item.precoLote}
+                              {item.data}
                             </p>
-                          ) : null}
-                        </div>
-
-                        {/* Rodapé: Tags técnicas */}
-                        <div className={`flex justify-between items-center pt-3 border-t ${isDarkMode ? 'border-gray-600' : 'border-gray-300'}`}>
-                          <p className={`text-xs ${
-                            isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                          }`}>
-                            {item.material} | {item.peso}g | Qtd: {item.quantidade}
-                          </p>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => copyToClipboard(item.whatsapp)}
-                            className={`text-xs py-0 h-auto ${isDarkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600'}`}
-                          >
-                            <Copy className="w-3 h-3" />
-                          </Button>
+                            <p className={`text-sm mt-2 ${
+                              isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                            }`}>
+                              Unitário: {item.precoUnitario} | Lote: {item.precoLote || '-'} | Qtd: {item.quantidade}
+                            </p>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => reorcarItem(item)}
+                              className={isDarkMode ? 'text-orange-400 hover:text-orange-300' : ''}
+                              title="Reorcar este item"
+                            >
+                              Reorcar
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => copyToClipboard(item.whatsapp)}
+                            >
+                              <Copy className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     ))}
