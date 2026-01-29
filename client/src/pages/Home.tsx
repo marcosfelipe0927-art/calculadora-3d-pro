@@ -131,16 +131,34 @@ export default function Home() {
       setHistorico(JSON.parse(savedHistorico));
     }
 
-    // Carregar userType e contador de cálculos
+    // Carregar userType e contador de cálculos com reset automático
     const savedUserType = localStorage.getItem('userType') as 'guest' | 'pro' | null;
     const savedCalculos = localStorage.getItem('calculos_realizados');
+    const lastResetDate = localStorage.getItem('calculos_last_reset_date');
+    const lastResetWeek = localStorage.getItem('calculos_last_reset_week');
+    
+    const today = new Date().toDateString();
+    const currentWeek = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000));
+    
+    // Reset diário se mudou o dia
+    if (lastResetDate !== today) {
+      localStorage.setItem('calculos_realizados', '0');
+      localStorage.setItem('calculos_last_reset_date', today);
+      setCalculosRealizados(0);
+    } else if (savedCalculos) {
+      setCalculosRealizados(parseInt(savedCalculos, 10));
+    }
+    
+    // Reset semanal se mudou a semana
+    if (lastResetWeek && parseInt(lastResetWeek, 10) !== currentWeek) {
+      localStorage.setItem('calculos_semanais', '0');
+      localStorage.setItem('calculos_last_reset_week', currentWeek.toString());
+    } else if (!lastResetWeek) {
+      localStorage.setItem('calculos_last_reset_week', currentWeek.toString());
+    }
     
     if (savedUserType) {
       setUserType(savedUserType);
-    }
-    
-    if (savedCalculos) {
-      setCalculosRealizados(parseInt(savedCalculos, 10));
     }
   }, []);
 
@@ -187,8 +205,8 @@ export default function Home() {
     setIsAuthenticated(false);
     setUserType('guest');
     localStorage.setItem('userType', 'guest');
-    localStorage.setItem('calculos_realizados', '0');
-    setCalculosRealizados(0);
+    // NÃO apagar calculos_realizados - manter para anti-burlas
+    // NÃO apagar data dos cálculos - manter para verificação de limite semanal
     setTokenInput("");
     toast.success("Desconectado com sucesso");
   };
@@ -261,6 +279,10 @@ export default function Home() {
   };
 
   const saveConfig = () => {
+    if (userType === 'guest') {
+      toast.error('Função exclusiva para assinantes PRO! Adquira seu token.');
+      return;
+    }
     const config = {
       nomeMaquina,
       cMaq,
@@ -278,9 +300,16 @@ export default function Home() {
       descKit,
     };
     localStorage.setItem('calculadora_config', JSON.stringify(config));
-    toast.success('Configuracoes salvas!');
+    toast.success('Configuração salva com sucesso!');
   };
 
+  const handleSaveDefaults = () => {
+    if (userType === 'guest') {
+      toast.error('Função exclusiva para assinantes PRO! Adquira seu token.');
+      return;
+    }
+    saveConfig();
+  };
   const savePecaPreferences = () => {
     const pecaPreferences = {
       material,
@@ -362,6 +391,10 @@ export default function Home() {
   };
 
   const shareWhatsApp = () => {
+    if (userType === 'guest') {
+      toast.error('Função exclusiva para assinantes PRO! Adquira seu token.');
+      return;
+    }
     if (!resZap) {
       toast.error('Calcule primeiro!');
       return;
@@ -746,6 +779,19 @@ export default function Home() {
                   >
                     CALCULAR
                   </Button>
+                  
+                  {userType === 'guest' && (
+                    <div className="mt-3 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                      <p className="text-sm text-yellow-800 font-semibold">
+                        Você usou {calculosRealizados} de 3 cálculos diários gratuitos
+                      </p>
+                      {calculosRealizados >= 3 && (
+                        <p className="text-xs text-red-600 mt-1">
+                          Limite atingido! Insira um token para acesso ilimitado.
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
