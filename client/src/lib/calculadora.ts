@@ -210,9 +210,9 @@ export function calcularPro(params: ParametrosCalculo): ResultadoCalculo {
   // Aplicar arredondamento psicologico aos valores do lote
   kFinais = kFinais.map((v) => arredondarPsicologico(v));
 
-  // Formatação das Strings de saída
-  const resUn = `Mínimo: R$ ${vFinais[0].toFixed(2)} | Sugerido: R$ ${vFinais[1].toFixed(2)} | Premium: R$ ${vFinais[2].toFixed(2)}`;
-  const resKit = `Mínimo: R$ ${kFinais[0].toFixed(2)} | Sugerido: R$ ${kFinais[1].toFixed(2)} | Premium: R$ ${kFinais[2].toFixed(2)}`;
+  // Formatação das Strings de saída - apenas valor sugerido (índice 1)
+  const resUn = `R$ ${vFinais[1].toFixed(2)}`;
+  const resKit = `R$ ${kFinais[1].toFixed(2)}`;
 
   // Cálculo de custos totais (com todas as taxas)
   // Custo base: material + energia
@@ -259,7 +259,8 @@ export function calcularPro(params: ParametrosCalculo): ResultadoCalculo {
   const dataE = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
   const dataFormatada = `${String(dataE.getDate()).padStart(2, "0")}/${String(dataE.getMonth() + 1).padStart(2, "0")}`;
   const txt = `📄 ORÇAMENTO: ${nomeCliente || "Peça 3D"}
-💰 Valor Total: R$ ${kFinais[1].toFixed(2)}
+💰 Unitário: R$ ${vFinais[1].toFixed(2)}
+💰 Lote: R$ ${kFinais[1].toFixed(2)}
 📅 Entrega estimada: ${dataFormatada}
 ⚙️ ${material} | ${nomeMaquina}`;
 
@@ -269,8 +270,8 @@ export function calcularPro(params: ParametrosCalculo): ResultadoCalculo {
     resZap: txt,
     valoresUnitarios: vFinais,
     valoresKit: kFinais,
-    custoUnitario,
-    custoTotal,
+    custoUnitario: vFinais[1],
+    custoTotal: kFinais[1],
     resCustoTotal,
   };
 }

@@ -200,7 +200,7 @@ export default function Home() {
     setResKit(resultado.resKit);
     setResZap(resultado.resZap);
     setResCustoTotal(resultado.resCustoTotal);
-    addToHistorico();
+    addToHistorico(resultado);
     
     // Scroll automatico para resultados em dispositivos moveis
     if (window.innerWidth < 1024) {
@@ -285,14 +285,14 @@ export default function Home() {
     toast.success('Dados carregados! Clique em CALCULAR para atualizar.');
   };
 
-  const addToHistorico = () => {
+  const addToHistorico = (resultado?: any) => {
     const novoItem = {
       id: Date.now(),
       data: new Date().toLocaleString('pt-BR'),
       cliente: nomeCliente || 'Cliente',
       peca: nomePeca || 'Peca',
-      precoUnitario: resUn,
-      precoLote: resKit,
+      precoUnitario: resultado?.resUn || resUn,
+      precoLote: resultado?.resKit || resKit,
       quantidade: qtdKit,
       custos: resCustoTotal,
       whatsapp: resZap,
@@ -904,42 +904,73 @@ export default function Home() {
                             : 'bg-gray-50 border-gray-200'
                         }`}
                       >
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <p className={`font-semibold ${
-                              isDarkMode ? 'text-white' : 'text-gray-900'
+                        {/* Título: Cliente - Peça */}
+                        <div className="flex justify-between items-start mb-3">
+                          <p className={`font-semibold text-base ${
+                            isDarkMode ? 'text-white' : 'text-gray-900'
+                          }`}>
+                            {item.cliente} - {item.peca}
+                          </p>
+                        </div>
+
+                        {/* Data + Botão Reorçar */}
+                        <div className="flex justify-between items-center mb-3">
+                          <p className={`text-xs ${
+                            isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                          }`}>
+                            {item.data}
+                          </p>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => reorcarItem(item)}
+                            className={`text-xs ${isDarkMode ? 'text-orange-400 hover:text-orange-300' : 'text-orange-600 hover:text-orange-700'}`}
+                            title="Reorçar este item"
+                          >
+                            Reorçar
+                          </Button>
+                        </div>
+
+                        {/* Valores: Unitário + Lote (condicional) */}
+                        <div className={`py-2 border-t border-b ${
+                          isDarkMode ? 'border-gray-600' : 'border-gray-300'
+                        }`}>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-lg">💰</span>
+                            <span className={`font-semibold ${
+                              isDarkMode ? 'text-orange-400' : 'text-orange-600'
                             }`}>
-                              {item.cliente} - {item.peca}
-                            </p>
-                            <p className={`text-sm ${
-                              isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                            }`}>
-                              {item.data}
-                            </p>
-                            <p className={`text-sm mt-2 ${
-                              isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                            }`}>
-                              Unitário: {item.precoUnitario} | Lote: {item.precoLote || '-'} | Qtd: {item.quantidade}
-                            </p>
+                              {item.precoUnitario}
+                            </span>
                           </div>
-                          <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => reorcarItem(item)}
-                              className={isDarkMode ? 'text-orange-400 hover:text-orange-300' : ''}
-                              title="Reorcar este item"
-                            >
-                              Reorcar
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => copyToClipboard(item.whatsapp)}
-                            >
-                              <Copy className="w-4 h-4" />
-                            </Button>
-                          </div>
+                          {item.quantidade > 1 && (
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg">📦</span>
+                              <span className={`font-semibold ${
+                                isDarkMode ? 'text-green-400' : 'text-green-600'
+                              }`}>
+                                {item.precoLote || 'R$ 0,00'}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Rodapé: Tags técnicas + Botão Copiar */}
+                        <div className="flex justify-between items-center mt-3">
+                          <p className={`text-xs ${
+                            isDarkMode ? 'text-gray-500' : 'text-gray-500'
+                          }`}>
+                            {item.material} | {item.peso} | Qtd: {item.quantidade}
+                          </p>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => copyToClipboard(item.whatsapp)}
+                            className="p-1 h-auto"
+                            title="Copiar para clipboard"
+                          >
+                            <Copy className="w-3 h-3" />
+                          </Button>
                         </div>
                       </div>
                     ))}
