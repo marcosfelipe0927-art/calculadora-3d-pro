@@ -118,6 +118,26 @@ export default function Home() {
     setCMaq(5.0);
   };
 
+  // Funcao para obter materiais filtrados por tipo de maquina
+  const getMaterialesFiltrados = () => {
+    if (!tipoMaquina) return [];
+    
+    if (tipoMaquina === 'filamento') {
+      // Filamentos: PLA, PETG, ABS, TPU, Nylon
+      return materiais.filter(m => ['PLA', 'PETG', 'ABS', 'TPU', 'Nylon'].includes(m.nome));
+    } else {
+      // Resina
+      return materiais.filter(m => m.nome === 'Resina');
+    }
+  };
+
+  // Funcao para obter opcoes unicas de tipos de material
+  const getMateriaisTipos = () => {
+    const filtrados = getMaterialesFiltrados();
+    const tipos = [...new Set(filtrados.map(m => m.nome))];
+    return tipos;
+  };
+
   useEffect(() => {
     // Verificar autenticacao no carregamento
     const savedToken = getTokenFromLocalStorage();
@@ -715,12 +735,14 @@ export default function Home() {
                           <SelectValue placeholder="Selecione" />
                         </SelectTrigger>
                         <SelectContent>
-                          {materiais.length > 0 ? (
-                            materiais.map((mat) => (
-                              <SelectItem key={mat.id} value={mat.nome}>
-                                {mat.nome} - {mat.marca}
+                          {tipoMaquina && getMaterialesFiltrados().length > 0 ? (
+                            getMateriaisTipos().map((tipo) => (
+                              <SelectItem key={tipo} value={tipo}>
+                                {tipo}
                               </SelectItem>
                             ))
+                          ) : tipoMaquina ? (
+                            <div className="p-2 text-sm text-gray-500">Nenhum material cadastrado</div>
                           ) : (
                             <>
                               <SelectItem value="PLA">PLA</SelectItem>
@@ -733,7 +755,9 @@ export default function Home() {
                     </div>
 
                     <div>
-                      <Label htmlFor="peso" className={isDarkMode ? 'text-white' : ''}>Peso (g)</Label>
+                      <Label htmlFor="peso" className={isDarkMode ? 'text-white' : ''}>
+                        {material === 'Resina' ? 'Volume (ml)' : 'Peso (g)'}
+                      </Label>
                       <Input
                         id="peso"
                         type="number"
