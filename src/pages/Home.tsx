@@ -68,7 +68,9 @@ export default function Home() {
   const [descKit, setDescKit] = useState<number>(10);
 
   // Configurações
+  const [tipoMaquina, setTipoMaquina] = useState<'filamento' | 'resina' | null>(null);
   const [nomeMaquina, setNomeMaquina] = useState<string>("Bambu Lab A1");
+  const [nomeMaquinaResina, setNomeMaquinaResina] = useState<string>("");
   const [cMaq, setCMaq] = useState<number>(0.9);
   const [estado, setEstado] = useState<string>("SP");
   const [vHora, setVHora] = useState<number>(40);
@@ -88,6 +90,33 @@ export default function Home() {
   const [materiais, setMateriais] = useState<any[]>([]);
   const [novoMaterial, setNovoMaterial] = useState({ nome: '', marca: '', precoPago: 0, pesoTotal: 0 });
   const [abaterDoEstoque, setAbaterDoEstoque] = useState<boolean>(true);
+  
+  const maquinasResina = [
+    "Anycubic Photon Mono 2",
+    "Elegoo Mars 4",
+    "Creality Halot One",
+    "Anycubic Photon M3",
+    "Elegoo Saturn 3",
+    "Creality Mage 8K",
+    "Phrozen Sonic Mini 4K",
+    "Anycubic Photon Mono X",
+    "Elegoo Mars 3 Pro",
+    "Voxelab Proxima"
+  ];
+  
+  const handleMaquinaFilamentoChange = (value: string) => {
+    setNomeMaquina(value);
+    setNomeMaquinaResina("");
+    setTipoMaquina('filamento');
+    setCMaq(0.9);
+  };
+  
+  const handleMaquinaResinaChange = (value: string) => {
+    setNomeMaquinaResina(value);
+    setNomeMaquina("");
+    setTipoMaquina('resina');
+    setCMaq(5.0);
+  };
 
   useEffect(() => {
     // Verificar autenticacao no carregamento
@@ -175,6 +204,15 @@ export default function Home() {
       setUserType(savedUserType);
     }
   }, []);
+
+  // Sincronizar material "Em uso" automaticamente
+  useEffect(() => {
+    const materialEmUso = materiais.find(m => m.emUso);
+    if (materialEmUso && material !== materialEmUso.nome) {
+      setMaterial(materialEmUso.nome);
+      setPrecoKg(materialEmUso.precoPago / (materialEmUso.pesoTotal / 1000));
+    }
+  }, [materiais]);
 
   // Salvar config automaticamente quando faz login com PRO
   useEffect(() => {
@@ -671,12 +709,22 @@ export default function Home() {
                       <Label htmlFor="material" className={isDarkMode ? 'text-white' : ''}>Material</Label>
                       <Select value={material} onValueChange={setMaterial}>
                         <SelectTrigger id="material" className="mt-1 w-full">
-                          <SelectValue />
+                          <SelectValue placeholder="Selecione" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="PLA">PLA</SelectItem>
-                          <SelectItem value="PETG">PETG</SelectItem>
-                          <SelectItem value="ABS">ABS</SelectItem>
+                          {materiais.length > 0 ? (
+                            materiais.map((mat) => (
+                              <SelectItem key={mat.id} value={mat.nome}>
+                                {mat.nome} - {mat.marca}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <>
+                              <SelectItem value="PLA">PLA</SelectItem>
+                              <SelectItem value="PETG">PETG</SelectItem>
+                              <SelectItem value="ABS">ABS</SelectItem>
+                            </>
+                          )}
                         </SelectContent>
                       </Select>
                     </div>
@@ -1186,12 +1234,16 @@ export default function Home() {
                 <CardDescription className={isDarkMode ? 'text-gray-400' : ''}>Defina os parâmetros padrão da sua operação</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <Label htmlFor="maquina" className={isDarkMode ? 'text-white' : ''}>Máquina Padrão</Label>
-                    <Select value={nomeMaquina} onValueChange={setNomeMaquina}>
+                <div>
+                  <h3 className={`font-semibold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Máquinas</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                    <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Filamento</p>
+                    <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Resina</p>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                    <Select value={nomeMaquina} onValueChange={handleMaquinaFilamentoChange}>
                       <SelectTrigger id="maquina" className="mt-1">
-                        <SelectValue />
+                        <SelectValue placeholder="Selecione" />
                       </SelectTrigger>
                       <SelectContent>
                         {Object.entries(maquinasBrasil).map(([nome]) => (
@@ -1201,10 +1253,21 @@ export default function Home() {
                         ))}
                       </SelectContent>
                     </Select>
+                    <Select value={nomeMaquinaResina} onValueChange={handleMaquinaResinaChange}>
+                      <SelectTrigger id="maquina-resina" className="mt-1">
+                        <SelectValue placeholder="Selecione" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {maquinasResina.map((nome) => (
+                          <SelectItem key={nome} value={nome}>
+                            {nome}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-
                   <div>
-                    <Label htmlFor="custo-maq" className={isDarkMode ? 'text-white' : ''}>Custo Máquina (R$/h)</Label>
+                    <Label htmlFor="custo-maq" className={isDarkMode ? 'text-white' : ''}>Custo de Manutenção/h (R$)</Label>
                     <Input
                       id="custo-maq"
                       type="number"
@@ -1212,9 +1275,14 @@ export default function Home() {
                       value={cMaq || ""}
                       onChange={(e) => setCMaq(e.target.value ? parseFloat(e.target.value) : 0)}
                       className="mt-1"
+                      disabled
                     />
+                    <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      {tipoMaquina === 'filamento' ? 'Filamento: R$ 0,90' : tipoMaquina === 'resina' ? 'Resina: R$ 5,00' : 'Selecione uma máquina'}
+                    </p>
                   </div>
-
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <Label htmlFor="estado" className={isDarkMode ? 'text-white' : ''}>Estado</Label>
                     <Select value={estado} onValueChange={setEstado}>
