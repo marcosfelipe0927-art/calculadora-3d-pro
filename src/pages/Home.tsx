@@ -68,9 +68,7 @@ export default function Home() {
   const [descKit, setDescKit] = useState<number>(10);
 
   // Configurações
-  const [tipoMaquina, setTipoMaquina] = useState<'filamento' | 'resina' | null>(null);
   const [nomeMaquina, setNomeMaquina] = useState<string>("Bambu Lab A1");
-  const [nomeMaquinaResina, setNomeMaquinaResina] = useState<string>("");
   const [cMaq, setCMaq] = useState<number>(0.9);
   const [estado, setEstado] = useState<string>("SP");
   const [vHora, setVHora] = useState<number>(40);
@@ -90,77 +88,6 @@ export default function Home() {
   const [materiais, setMateriais] = useState<any[]>([]);
   const [novoMaterial, setNovoMaterial] = useState({ nome: '', marca: '', precoPago: 0, pesoTotal: 0 });
   const [abaterDoEstoque, setAbaterDoEstoque] = useState<boolean>(true);
-  
-  const maquinasResina = [
-    "Anycubic Photon Mono 2",
-    "Elegoo Mars 4",
-    "Creality Halot One",
-    "Anycubic Photon M3",
-    "Elegoo Saturn 3",
-    "Creality Mage 8K",
-    "Phrozen Sonic Mini 4K",
-    "Anycubic Photon Mono X",
-    "Elegoo Mars 3 Pro",
-    "Voxelab Proxima"
-  ];
-  
-  const handleMaquinaFilamentoChange = (value: string) => {
-    setNomeMaquina(value);
-    setNomeMaquinaResina("");
-    setTipoMaquina('filamento');
-    setCMaq(0.9);
-    // Automacao: Mudar material para PLA (primeiro filamento padrao)
-    setMaterial('PLA');
-  };
-  
-  const handleMaquinaResinaChange = (value: string) => {
-    setNomeMaquinaResina(value);
-    setNomeMaquina("");
-    setTipoMaquina('resina');
-    setCMaq(5.0);
-    // Automacao: Mudar material para Resina
-    setMaterial('Resina');
-  };
-
-  // Funcao para obter materiais filtrados por tipo de maquina
-  const getMaterialesFiltrados = () => {
-    if (!tipoMaquina) return [];
-    
-    if (tipoMaquina === 'filamento') {
-      // Filamentos: PLA, PETG, ABS, TPU, Nylon
-      return materiais.filter(m => ['PLA', 'PETG', 'ABS', 'TPU', 'Nylon'].includes(m.nome));
-    } else {
-      // Resina
-      return materiais.filter(m => m.nome === 'Resina');
-    }
-  };
-
-
-  // Funcao para aplicar acrescimo de consumo para Nylon e ABS
-  const getAcrescimoConsumo = (materialSelecionado: string) => {
-    return ['Nylon', 'ABS'].includes(materialSelecionado) ? 1.15 : 1.0;
-  };
-
-  // Funcao para obter opcoes unicas de tipos de material
-  const getMateriaisTipos = () => {
-    const filamentoPadrao = ['PLA', 'PETG', 'ABS', 'TPU', 'Nylon'];
-    
-    if (tipoMaquina === 'filamento') {
-      // Combinar materiais cadastrados com padroes
-      const filtrados = getMaterialesFiltrados();
-      const tipos = [...new Set(filtrados.map(m => m.nome))];
-      // Adicionar padroes que nao estao cadastrados
-      filamentoPadrao.forEach(tipo => {
-        if (!tipos.includes(tipo)) {
-          tipos.push(tipo);
-        }
-      });
-      return tipos.sort();
-    } else if (tipoMaquina === 'resina') {
-      return ['Resina'];
-    }
-    return [];
-  };
 
   useEffect(() => {
     // Verificar autenticacao no carregamento
@@ -193,7 +120,6 @@ export default function Home() {
     if (savedConfig) {
       const config = JSON.parse(savedConfig);
       setNomeMaquina(config.nomeMaquina || 'Bambu Lab A1');
-      setTipoMaquina('filamento');
       setCMaq(config.cMaq || 0.9);
       setEstado(config.estado || 'SP');
       setVHora(config.vHora || 40);
@@ -207,9 +133,6 @@ export default function Home() {
       setMkpMl(config.mkpMl || false);
       setChkFrete(config.chkFrete || false);
       setDescKit(config.descKit || 10);
-    } else {
-      // Se nao houver config salva, definir tipoMaquina como filamento por padrao
-      setTipoMaquina('filamento');
     }
     
     if (savedHistorico) {
@@ -252,15 +175,6 @@ export default function Home() {
       setUserType(savedUserType);
     }
   }, []);
-
-  // Sincronizar material "Em uso" automaticamente
-  useEffect(() => {
-    const materialEmUso = materiais.find(m => m.emUso);
-    if (materialEmUso && material !== materialEmUso.nome) {
-      setMaterial(materialEmUso.nome);
-      setPrecoKg(materialEmUso.precoPago / (materialEmUso.pesoTotal / 1000));
-    }
-  }, [materiais]);
 
   // Salvar config automaticamente quando faz login com PRO
   useEffect(() => {
@@ -392,9 +306,6 @@ export default function Home() {
       return;
     }
 
-    // Se quantidade está vazia, assumir 1
-    const qtdFinal = qtdKit === 0 || !qtdKit ? 1 : qtdKit;
-
     const params: ParametrosCalculo = {
       material,
       peso,
@@ -403,7 +314,7 @@ export default function Home() {
       tPosHoras,
       tPosMinutos,
       exclusivo,
-      qtdKit: qtdFinal,
+      qtdKit,
       descKit,
       vHora,
       cMaq,
@@ -760,32 +671,18 @@ export default function Home() {
                       <Label htmlFor="material" className={isDarkMode ? 'text-white' : ''}>Material</Label>
                       <Select value={material} onValueChange={setMaterial}>
                         <SelectTrigger id="material" className="mt-1 w-full">
-                          <SelectValue placeholder="Selecione" />
+                          <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {tipoMaquina && getMateriaisTipos().length > 0 ? (
-                            getMateriaisTipos().map((tipo) => (
-                              <SelectItem key={tipo} value={tipo}>
-                                {tipo}
-                              </SelectItem>
-                            ))
-                          ) : tipoMaquina ? (
-                            <div className="p-2 text-sm text-gray-500">Nenhum material cadastrado</div>
-                          ) : (
-                            <>
-                              <SelectItem value="PLA">PLA</SelectItem>
-                              <SelectItem value="PETG">PETG</SelectItem>
-                              <SelectItem value="ABS">ABS</SelectItem>
-                            </>
-                          )}
+                          <SelectItem value="PLA">PLA</SelectItem>
+                          <SelectItem value="PETG">PETG</SelectItem>
+                          <SelectItem value="ABS">ABS</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
 
                     <div>
-                      <Label htmlFor="peso" className={isDarkMode ? 'text-white' : ''}>
-                        {material === 'Resina' ? 'Volume (ml)' : 'Peso (g)'}
-                      </Label>
+                      <Label htmlFor="peso" className={isDarkMode ? 'text-white' : ''}>Peso (g)</Label>
                       <Input
                         id="peso"
                         type="number"
@@ -867,10 +764,9 @@ export default function Home() {
                       <Input
                         id="qtd"
                         type="number"
-                        value={qtdKit === 1 && !isNaN(qtdKit) ? qtdKit : qtdKit || ""}
-                        onChange={(e) => setQtdKit(e.target.value ? parseFloat(e.target.value) : 0)}
+                        value={qtdKit || ""}
+                        onChange={(e) => setQtdKit(e.target.value ? parseFloat(e.target.value) : 1)}
                         className="mt-1 w-full"
-                        placeholder="1"
                       />
                     </div>
                   </div>
@@ -1198,13 +1094,11 @@ export default function Home() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="material-peso" className={isDarkMode ? 'text-white' : ''}>
-                        {novoMaterial.nome === 'Resina' ? 'Quantidade Total (ml)' : 'Peso Total (g)'}
-                      </Label>
+                      <Label htmlFor="material-peso" className={isDarkMode ? 'text-white' : ''}>Peso Total (g)</Label>
                       <Input
                         id="material-peso"
                         type="number"
-                        placeholder={novoMaterial.nome === 'Resina' ? '500' : '1000'}
+                        placeholder="1000"
                         value={novoMaterial.pesoTotal || ''}
                         onChange={(e) => setNovoMaterial({...novoMaterial, pesoTotal: parseFloat(e.target.value) || 0})}
                         className="mt-1"
@@ -1251,10 +1145,7 @@ export default function Home() {
                                     ? 'text-red-500 font-bold' 
                                     : isDarkMode ? 'text-gray-400' : 'text-gray-600'
                                 }`}>
-                                  {mat.nome === 'Resina' 
-                                    ? `Quantidade: ${mat.pesoRestante}ml / ${mat.pesoTotal}ml` 
-                                    : `Peso: ${mat.pesoRestante}g / ${mat.pesoTotal}g`
-                                  } | Preço: R$ {mat.precoPago.toFixed(2)}
+                                  Peso: {mat.pesoRestante}g / {mat.pesoTotal}g | Preco: R$ {mat.precoPago.toFixed(2)}
                                 </p>
                               </div>
                               <div className="flex gap-2">
@@ -1295,55 +1186,35 @@ export default function Home() {
                 <CardDescription className={isDarkMode ? 'text-gray-400' : ''}>Defina os parâmetros padrão da sua operação</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div>
-                  <h3 className={`font-semibold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Máquinas</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <Label htmlFor="maquina" className={isDarkMode ? 'text-white' : ''}>Filamento</Label>
-                      <Select value={nomeMaquina} onValueChange={handleMaquinaFilamentoChange}>
-                        <SelectTrigger id="maquina" className="mt-2">
-                          <SelectValue placeholder="Selecione" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Object.entries(maquinasBrasil).map(([nome]) => (
-                            <SelectItem key={nome} value={nome}>
-                              {nome}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label htmlFor="maquina-resina" className={isDarkMode ? 'text-white' : ''}>Resina</Label>
-                      <Select value={nomeMaquinaResina} onValueChange={handleMaquinaResinaChange}>
-                        <SelectTrigger id="maquina-resina" className="mt-2">
-                          <SelectValue placeholder="Selecione" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {maquinasResina.map((nome) => (
-                            <SelectItem key={nome} value={nome}>
-                              {nome}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <div className="mt-6">
-                    <Label htmlFor="custo-maq" className={isDarkMode ? 'text-white' : ''}>Custo de Manutenção/h (R$)</Label>
-                    <CurrencyInput
-                      id="custo-maq"
-                      value={cMaq}
-                      onChange={(value) => setCMaq(value)}
-                      placeholder="0,00"
-                      className="mt-2"
-                    />
-                    <p className={`text-xs mt-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                      {tipoMaquina === 'filamento' ? 'Padrão: R$ 0,90' : tipoMaquina === 'resina' ? 'Padrão: R$ 5,00' : 'Selecione uma máquina'}
-                    </p>
-                  </div>
-                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <Label htmlFor="maquina" className={isDarkMode ? 'text-white' : ''}>Máquina Padrão</Label>
+                    <Select value={nomeMaquina} onValueChange={setNomeMaquina}>
+                      <SelectTrigger id="maquina" className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(maquinasBrasil).map(([nome]) => (
+                          <SelectItem key={nome} value={nome}>
+                            {nome}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="custo-maq" className={isDarkMode ? 'text-white' : ''}>Custo Máquina (R$/h)</Label>
+                    <Input
+                      id="custo-maq"
+                      type="number"
+                      step="0.01"
+                      value={cMaq || ""}
+                      onChange={(e) => setCMaq(e.target.value ? parseFloat(e.target.value) : 0)}
+                      className="mt-1"
+                    />
+                  </div>
+
                   <div>
                     <Label htmlFor="estado" className={isDarkMode ? 'text-white' : ''}>Estado</Label>
                     <Select value={estado} onValueChange={setEstado}>
@@ -1481,7 +1352,7 @@ export default function Home() {
                           <p className={`text-xs ${
                             isDarkMode ? 'text-gray-500' : 'text-gray-500'
                           }`}>
-                            {item.material} | {item.material === 'Resina' ? `${item.peso}ml` : item.peso} | Qtd: {item.quantidade}
+                            {item.material} | {item.peso} | Qtd: {item.quantidade}
                           </p>
                           <Button
                             size="sm"
