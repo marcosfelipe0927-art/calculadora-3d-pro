@@ -94,6 +94,8 @@ export default function Home() {
     const savedFingerprint = getFingerprintFromLocalStorage();
     const currentFingerprint = generateFingerprint();
 
+    console.log('[DEBUG] Carregando dados persistidos:', { savedToken: !!savedToken, savedFingerprint: !!savedFingerprint });
+
     if (savedToken) {
       const validacao = isTokenValid(savedToken);
       if (validacao.valido) {
@@ -172,6 +174,30 @@ export default function Home() {
       setUserType(savedUserType);
     }
   }, []);
+
+  // Salvar config automaticamente quando faz login com PRO
+  useEffect(() => {
+    if (userType === 'pro' && isAuthenticated) {
+      const config = {
+        nomeMaquina,
+        cMaq,
+        estado,
+        vHora,
+        vFrete,
+        multExcl,
+        chkIcms,
+        chkIss,
+        chkRisco,
+        exclusivo,
+        mkpShopee,
+        mkpMl,
+        chkFrete,
+        descKit,
+      };
+      localStorage.setItem('calculadora_config', JSON.stringify(config));
+      console.log('[DEBUG] Config salva automaticamente para PRO');
+    }
+  }, [userType, isAuthenticated, nomeMaquina, cMaq, estado, vHora, vFrete, multExcl, chkIcms, chkIss, chkRisco, exclusivo, mkpShopee, mkpMl, chkFrete, descKit]);
 
   const handleTokenLogin = () => {
     if (!tokenInput.trim()) {
