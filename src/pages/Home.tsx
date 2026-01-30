@@ -14,6 +14,7 @@ import { Slider } from "@/components/ui/slider";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Copy, Download, Share2, Clock, Lock, Save, Eye, EyeOff, Edit2, Trash2, AlertCircle } from "lucide-react";
 import { TimeMaskInput } from "@/components/TimeMaskInput";
+import { CurrencyInput } from "@/components/CurrencyInput";
 import { toast } from "sonner";
 import {
   calcularPro,
@@ -1057,13 +1058,20 @@ export default function Home() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="material-nome" className={isDarkMode ? 'text-white' : ''}>Nome do Material</Label>
-                      <Input
-                        id="material-nome"
-                        placeholder="Ex: PLA"
-                        value={novoMaterial.nome}
-                        onChange={(e) => setNovoMaterial({...novoMaterial, nome: e.target.value})}
-                        className="mt-1"
-                      />
+                      <Select value={novoMaterial.nome} onValueChange={(value) => setNovoMaterial({...novoMaterial, nome: value})}>
+                        <SelectTrigger id="material-nome" className={`mt-1 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : ''}`}>
+                          <SelectValue placeholder="Selecione" />
+                        </SelectTrigger>
+                        <SelectContent className={isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : ''}>
+                          <SelectItem value="PLA">PLA</SelectItem>
+                          <SelectItem value="PETG">PETG</SelectItem>
+                          <SelectItem value="ABS">ABS</SelectItem>
+                          <SelectItem value="TPU">TPU</SelectItem>
+                          <SelectItem value="Nylon">Nylon</SelectItem>
+                          <SelectItem value="Resina">Resina</SelectItem>
+                          <SelectItem value="Outro">Outro</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div>
                       <Label htmlFor="material-marca" className={isDarkMode ? 'text-white' : ''}>Marca</Label>
@@ -1076,14 +1084,12 @@ export default function Home() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="material-preco" className={isDarkMode ? 'text-white' : ''}>Preco Pago (R$)</Label>
-                      <Input
+                      <Label htmlFor="material-preco" className={isDarkMode ? 'text-white' : ''}>Preço Pago (R$)</Label>
+                      <CurrencyInput
                         id="material-preco"
-                        type="number"
-                        step="0.01"
-                        placeholder="0.00"
-                        value={novoMaterial.precoPago || ''}
-                        onChange={(e) => setNovoMaterial({...novoMaterial, precoPago: parseFloat(e.target.value) || 0})}
+                        value={Math.round(novoMaterial.precoPago * 100)}
+                        onChange={(value) => setNovoMaterial({...novoMaterial, precoPago: value / 100})}
+                        placeholder="0,00"
                         className="mt-1"
                       />
                     </div>

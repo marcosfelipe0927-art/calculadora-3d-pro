@@ -65,6 +65,7 @@ export const TimeMaskInput: React.FC<TimeMaskInputProps> = ({
   return (
     <Input
       type="text"
+      inputMode="decimal"
       value={displayValue}
       onChange={handleChange}
       onKeyDown={handleKeyDown}
