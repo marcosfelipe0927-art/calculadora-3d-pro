@@ -344,6 +344,9 @@ export default function Home() {
       return;
     }
 
+    // Se quantidade está vazia, assumir 1
+    const qtdFinal = qtdKit === 0 || !qtdKit ? 1 : qtdKit;
+
     const params: ParametrosCalculo = {
       material,
       peso,
@@ -352,7 +355,7 @@ export default function Home() {
       tPosHoras,
       tPosMinutos,
       exclusivo,
-      qtdKit,
+      qtdKit: qtdFinal,
       descKit,
       vHora,
       cMaq,
@@ -812,9 +815,10 @@ export default function Home() {
                       <Input
                         id="qtd"
                         type="number"
-                        value={qtdKit || ""}
-                        onChange={(e) => setQtdKit(e.target.value ? parseFloat(e.target.value) : 1)}
+                        value={qtdKit === 1 && !isNaN(qtdKit) ? qtdKit : qtdKit || ""}
+                        onChange={(e) => setQtdKit(e.target.value ? parseFloat(e.target.value) : 0)}
                         className="mt-1 w-full"
+                        placeholder="1"
                       />
                     </div>
                   </div>
@@ -1142,11 +1146,13 @@ export default function Home() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="material-peso" className={isDarkMode ? 'text-white' : ''}>Peso Total (g)</Label>
+                      <Label htmlFor="material-peso" className={isDarkMode ? 'text-white' : ''}>
+                        {novoMaterial.nome === 'Resina' ? 'Quantidade Total (ml)' : 'Peso Total (g)'}
+                      </Label>
                       <Input
                         id="material-peso"
                         type="number"
-                        placeholder="1000"
+                        placeholder={novoMaterial.nome === 'Resina' ? '500' : '1000'}
                         value={novoMaterial.pesoTotal || ''}
                         onChange={(e) => setNovoMaterial({...novoMaterial, pesoTotal: parseFloat(e.target.value) || 0})}
                         className="mt-1"
@@ -1193,7 +1199,10 @@ export default function Home() {
                                     ? 'text-red-500 font-bold' 
                                     : isDarkMode ? 'text-gray-400' : 'text-gray-600'
                                 }`}>
-                                  Peso: {mat.pesoRestante}g / {mat.pesoTotal}g | Preco: R$ {mat.precoPago.toFixed(2)}
+                                  {mat.nome === 'Resina' 
+                                    ? `Quantidade: ${mat.pesoRestante}ml / ${mat.pesoTotal}ml` 
+                                    : `Peso: ${mat.pesoRestante}g / ${mat.pesoTotal}g`
+                                  } | Preço: R$ {mat.precoPago.toFixed(2)}
                                 </p>
                               </div>
                               <div className="flex gap-2">
@@ -1236,49 +1245,49 @@ export default function Home() {
               <CardContent className="space-y-6">
                 <div>
                   <h3 className={`font-semibold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Máquinas</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-                    <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Filamento</p>
-                    <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Resina</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <Label htmlFor="maquina" className={isDarkMode ? 'text-white' : ''}>Filamento</Label>
+                      <Select value={nomeMaquina} onValueChange={handleMaquinaFilamentoChange}>
+                        <SelectTrigger id="maquina" className="mt-2">
+                          <SelectValue placeholder="Selecione" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(maquinasBrasil).map(([nome]) => (
+                            <SelectItem key={nome} value={nome}>
+                              {nome}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="maquina-resina" className={isDarkMode ? 'text-white' : ''}>Resina</Label>
+                      <Select value={nomeMaquinaResina} onValueChange={handleMaquinaResinaChange}>
+                        <SelectTrigger id="maquina-resina" className="mt-2">
+                          <SelectValue placeholder="Selecione" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {maquinasResina.map((nome) => (
+                            <SelectItem key={nome} value={nome}>
+                              {nome}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-                    <Select value={nomeMaquina} onValueChange={handleMaquinaFilamentoChange}>
-                      <SelectTrigger id="maquina" className="mt-1">
-                        <SelectValue placeholder="Selecione" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(maquinasBrasil).map(([nome]) => (
-                          <SelectItem key={nome} value={nome}>
-                            {nome}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Select value={nomeMaquinaResina} onValueChange={handleMaquinaResinaChange}>
-                      <SelectTrigger id="maquina-resina" className="mt-1">
-                        <SelectValue placeholder="Selecione" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {maquinasResina.map((nome) => (
-                          <SelectItem key={nome} value={nome}>
-                            {nome}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
+                  <div className="mt-6">
                     <Label htmlFor="custo-maq" className={isDarkMode ? 'text-white' : ''}>Custo de Manutenção/h (R$)</Label>
-                    <Input
+                    <CurrencyInput
                       id="custo-maq"
-                      type="number"
-                      step="0.01"
-                      value={cMaq || ""}
-                      onChange={(e) => setCMaq(e.target.value ? parseFloat(e.target.value) : 0)}
-                      className="mt-1"
-                      disabled
+                      value={cMaq}
+                      onChange={(value) => setCMaq(value)}
+                      placeholder="0,00"
+                      className="mt-2"
                     />
-                    <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                      {tipoMaquina === 'filamento' ? 'Filamento: R$ 0,90' : tipoMaquina === 'resina' ? 'Resina: R$ 5,00' : 'Selecione uma máquina'}
+                    <p className={`text-xs mt-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      {tipoMaquina === 'filamento' ? 'Padrão: R$ 0,90' : tipoMaquina === 'resina' ? 'Padrão: R$ 5,00' : 'Selecione uma máquina'}
                     </p>
                   </div>
                 </div>
@@ -1420,7 +1429,7 @@ export default function Home() {
                           <p className={`text-xs ${
                             isDarkMode ? 'text-gray-500' : 'text-gray-500'
                           }`}>
-                            {item.material} | {item.peso} | Qtd: {item.quantidade}
+                            {item.material} | {item.material === 'Resina' ? `${item.peso}ml` : item.peso} | Qtd: {item.quantidade}
                           </p>
                           <Button
                             size="sm"
