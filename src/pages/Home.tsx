@@ -109,6 +109,8 @@ export default function Home() {
     setNomeMaquinaResina("");
     setTipoMaquina('filamento');
     setCMaq(0.9);
+    // Automacao: Mudar material para PLA (primeiro filamento padrao)
+    setMaterial('PLA');
   };
   
   const handleMaquinaResinaChange = (value: string) => {
@@ -116,6 +118,8 @@ export default function Home() {
     setNomeMaquina("");
     setTipoMaquina('resina');
     setCMaq(5.0);
+    // Automacao: Mudar material para Resina
+    setMaterial('Resina');
   };
 
   // Funcao para obter materiais filtrados por tipo de maquina
@@ -131,11 +135,31 @@ export default function Home() {
     }
   };
 
+
+  // Funcao para aplicar acrescimo de consumo para Nylon e ABS
+  const getAcrescimoConsumo = (materialSelecionado: string) => {
+    return ['Nylon', 'ABS'].includes(materialSelecionado) ? 1.15 : 1.0;
+  };
+
   // Funcao para obter opcoes unicas de tipos de material
   const getMateriaisTipos = () => {
-    const filtrados = getMaterialesFiltrados();
-    const tipos = [...new Set(filtrados.map(m => m.nome))];
-    return tipos;
+    const filamentoPadrao = ['PLA', 'PETG', 'ABS', 'TPU', 'Nylon'];
+    
+    if (tipoMaquina === 'filamento') {
+      // Combinar materiais cadastrados com padroes
+      const filtrados = getMaterialesFiltrados();
+      const tipos = [...new Set(filtrados.map(m => m.nome))];
+      // Adicionar padroes que nao estao cadastrados
+      filamentoPadrao.forEach(tipo => {
+        if (!tipos.includes(tipo)) {
+          tipos.push(tipo);
+        }
+      });
+      return tipos.sort();
+    } else if (tipoMaquina === 'resina') {
+      return ['Resina'];
+    }
+    return [];
   };
 
   useEffect(() => {
@@ -169,6 +193,7 @@ export default function Home() {
     if (savedConfig) {
       const config = JSON.parse(savedConfig);
       setNomeMaquina(config.nomeMaquina || 'Bambu Lab A1');
+      setTipoMaquina('filamento');
       setCMaq(config.cMaq || 0.9);
       setEstado(config.estado || 'SP');
       setVHora(config.vHora || 40);
@@ -182,6 +207,9 @@ export default function Home() {
       setMkpMl(config.mkpMl || false);
       setChkFrete(config.chkFrete || false);
       setDescKit(config.descKit || 10);
+    } else {
+      // Se nao houver config salva, definir tipoMaquina como filamento por padrao
+      setTipoMaquina('filamento');
     }
     
     if (savedHistorico) {
@@ -735,7 +763,7 @@ export default function Home() {
                           <SelectValue placeholder="Selecione" />
                         </SelectTrigger>
                         <SelectContent>
-                          {tipoMaquina && getMaterialesFiltrados().length > 0 ? (
+                          {tipoMaquina && getMateriaisTipos().length > 0 ? (
                             getMateriaisTipos().map((tipo) => (
                               <SelectItem key={tipo} value={tipo}>
                                 {tipo}
