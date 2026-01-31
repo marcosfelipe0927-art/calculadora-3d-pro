@@ -34,6 +34,7 @@ import {
 } from "@/lib/auth";
 import { registrarSessao, validarSessao, encerrarSessao, validarNovoDispositivo, registrarDispositivo } from "@/lib/supabase";
 import { executarMigracoes } from "@/lib/migrations";
+import { forcarAtualizacao } from "@/lib/version";
 import { useState, useEffect, useRef } from "react";
 
 export default function Home() {
@@ -94,6 +95,9 @@ export default function Home() {
   const [abaterDoEstoque, setAbaterDoEstoque] = useState<boolean>(true);
 
   useEffect(() => {
+    // Verificar nova versão e forçar atualização se necessário
+    forcarAtualizacao();
+
     // Verificar autenticacao no carregamento
     const savedToken = getTokenFromLocalStorage();
     const savedFingerprint = getFingerprintFromLocalStorage();
