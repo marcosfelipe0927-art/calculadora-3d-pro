@@ -1,4 +1,3 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,25 +22,13 @@ import {
   aliquotasIcms,
   type ParametrosCalculo,
 } from "@/lib/calculadora";
-import {
-  generateFingerprint,
-  isTokenValid,
-  saveAuthToLocalStorage,
-  getTokenFromLocalStorage,
-  getFingerprintFromLocalStorage,
-  isSameDevice,
-  clearAuthFromLocalStorage,
-} from "@/lib/auth";
 import { useState, useEffect, useRef } from "react";
 
 export default function Home() {
-  // Estado de Autenticação
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [tokenInput, setTokenInput] = useState<string>("");
+  // Estado de Autenticação (Simplificado)
   const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
   const [userType, setUserType] = useState<'guest' | 'pro'>('guest');
   const [calculosRealizados, setCalculosRealizados] = useState<number>(0);
-  const [showToken, setShowToken] = useState<boolean>(false);
   
   // Ref para scroll automático
   const resultadosRef = useRef<HTMLDivElement>(null);
@@ -89,34 +76,12 @@ export default function Home() {
   const [novoMaterial, setNovoMaterial] = useState({ nome: '', marca: '', precoPago: 0, pesoTotal: 0 });
   const [abaterDoEstoque, setAbaterDoEstoque] = useState<boolean>(true);
 
+  // Carregamento inicial - SIMPLIFICADO
   useEffect(() => {
-    // Verificar autenticacao no carregamento
-    const savedToken = getTokenFromLocalStorage();
-    const savedFingerprint = getFingerprintFromLocalStorage();
-    const currentFingerprint = generateFingerprint();
+    console.log('[INIT] Carregando configurações do localStorage...');
 
-    console.log('[DEBUG] Carregando dados persistidos:', { savedToken: !!savedToken, savedFingerprint: !!savedFingerprint });
-
-    if (savedToken) {
-      const validacao = isTokenValid(savedToken);
-      if (validacao.valido) {
-        if (savedFingerprint && isSameDevice(savedFingerprint, currentFingerprint)) {
-          setIsAuthenticated(true);
-        } else if (!savedFingerprint) {
-          setIsAuthenticated(true);
-        } else {
-          toast.error("Este token ja esta em uso em outro dispositivo");
-          clearAuthFromLocalStorage();
-        }
-      } else {
-        toast.error(validacao.motivo || "Token invalido");
-        clearAuthFromLocalStorage();
-      }
-    }
-
+    // Carregar configurações de máquina
     const savedConfig = localStorage.getItem('calculadora_config');
-    const savedHistorico = localStorage.getItem('calculadora_historico');
-    
     if (savedConfig) {
       const config = JSON.parse(savedConfig);
       setNomeMaquina(config.nomeMaquina || 'Bambu Lab A1');
@@ -135,6 +100,8 @@ export default function Home() {
       setDescKit(config.descKit || 10);
     }
     
+    // Carregar histórico
+    const savedHistorico = localStorage.getItem('calculadora_historico');
     if (savedHistorico) {
       setHistorico(JSON.parse(savedHistorico));
     }
@@ -145,7 +112,7 @@ export default function Home() {
       setMateriais(JSON.parse(savedMateriais));
     }
 
-    // Carregar userType e contador de cálculos com reset automático
+    // Carregar tipo de usuário e contador de cálculos
     const savedUserType = localStorage.getItem('userType') as 'guest' | 'pro' | null;
     const savedCalculos = localStorage.getItem('calculos_realizados');
     const lastResetDate = localStorage.getItem('calculos_last_reset_date');
@@ -175,240 +142,11 @@ export default function Home() {
       setUserType(savedUserType);
     }
 
-    // Validacao periodica de fingerprint
-    const validacaoInterval = setInterval(() => {
-      const token = getTokenFromLocalStorage();
-      const savedFp = getFingerprintFromLocalStorage();
-      const currentFp = generateFingerprint();
-
-      if (token && savedFp && !isSameDevice(savedFp, currentFp)) {
-        console.log('[SEGURANCA] Fingerprint diferente. Desconectando...');
-        toast.error('Acesso permitido em apenas um dispositivo por vez.');
-        clearAuthFromLocalStorage();
-        setIsAuthenticated(false);
-        setUserType('guest');
-        localStorage.setItem('userType', 'guest');
-      }
-    }, 10000);
-
-    return () => clearInterval(validacaoInterval);
+    console.log('[INIT] Configurações carregadas com sucesso');
   }, []);
 
-  // Salvar config automaticamente quando faz login com PRO
+  // Salvar config automaticamente quando há mudanças
   useEffect(() => {
-    if (userType === 'pro' && isAuthenticated) {
-      const config = {
-        nomeMaquina,
-        cMaq,
-        estado,
-        vHora,
-        vFrete,
-        multExcl,
-        chkIcms,
-        chkIss,
-        chkRisco,
-        exclusivo,
-        mkpShopee,
-        mkpMl,
-        chkFrete,
-        descKit,
-      };
-      localStorage.setItem('calculadora_config', JSON.stringify(config));
-      console.log('[DEBUG] Config salva automaticamente para PRO');
-    }
-  }, [userType, isAuthenticated, nomeMaquina, cMaq, estado, vHora, vFrete, multExcl, chkIcms, chkIss, chkRisco, exclusivo, mkpShopee, mkpMl, chkFrete, descKit]);
-
-  const handleTokenLogin = () => {
-    if (!tokenInput.trim()) {
-      toast.error("Digite um token valido");
-      return;
-    }
-
-    const validacao = isTokenValid(tokenInput);
-    if (!validacao.valido) {
-      toast.error(validacao.motivo || "Token invalido");
-      return;
-    }
-
-    const currentFingerprint = generateFingerprint();
-    const savedFingerprint = getFingerprintFromLocalStorage();
-    const savedToken = getTokenFromLocalStorage();
-
-    // Se ja existe um token salvo e nao eh o mesmo
-    if (savedToken && savedToken !== tokenInput) {
-      toast.error("Outro token ja esta em uso neste dispositivo");
-      return;
-    }
-
-    // Se ja existe um fingerprint salvo e nao corresponde
-    if (savedFingerprint && !isSameDevice(savedFingerprint, currentFingerprint)) {
-      toast.error("Este token ja esta em uso em outro dispositivo");
-      return;
-    }
-
-    saveAuthToLocalStorage(tokenInput, currentFingerprint);
-    setIsAuthenticated(true);
-    setUserType('pro');
-    localStorage.setItem('userType', 'pro');
-    localStorage.setItem('calculos_realizados', '0');
-    setCalculosRealizados(0);
-    setTokenInput("");
-    toast.success("Acesso concedido!");
-  };
-
-  const handleLogout = () => {
-    clearAuthFromLocalStorage();
-    setIsAuthenticated(false);
-    setUserType('guest');
-    localStorage.setItem('userType', 'guest');
-    setTokenInput("");
-    toast.success("Desconectado com sucesso");
-  };
-  
-  const handleSalvarMaterial = () => {
-    if (userType === 'guest') {
-      toast.error('Para gerenciar seu estoque, usar o abate automatico e salvar seus materiais, adquira a versao PRO!');
-      return;
-    }
-    if (!novoMaterial.nome.trim() || !novoMaterial.marca.trim() || novoMaterial.pesoTotal <= 0) {
-      toast.error('Preencha todos os campos corretamente');
-      return;
-    }
-    const novoId = Date.now().toString();
-    const materialNovo = {
-      id: novoId,
-      nome: novoMaterial.nome,
-      marca: novoMaterial.marca,
-      precoPago: novoMaterial.precoPago,
-      pesoTotal: novoMaterial.pesoTotal,
-      pesoRestante: novoMaterial.pesoTotal,
-      emUso: true,
-      dataCadastro: new Date().toLocaleDateString('pt-BR')
-    };
-    const materiaisAtualizados = materiais.map(m => ({ ...m, emUso: false }));
-    materiaisAtualizados.push(materialNovo);
-    setMateriais(materiaisAtualizados);
-    localStorage.setItem('calculadora_materiais', JSON.stringify(materiaisAtualizados));
-    setMaterial(novoMaterial.nome);
-    setPrecoKg(novoMaterial.precoPago / (novoMaterial.pesoTotal / 1000));
-    setNovoMaterial({ nome: '', marca: '', precoPago: 0, pesoTotal: 0 });
-    toast.success('Material salvo com sucesso!');
-  };
-  
-  const handleAtivarMaterial = (id: string) => {
-    const materiaisAtualizados = materiais.map(m => ({
-      ...m,
-      emUso: m.id === id
-    }));
-    setMateriais(materiaisAtualizados);
-    localStorage.setItem('calculadora_materiais', JSON.stringify(materiaisAtualizados));
-    const materialAtivo = materiaisAtualizados.find(m => m.id === id);
-    if (materialAtivo) {
-      setMaterial(materialAtivo.nome);
-      setPrecoKg(materialAtivo.precoPago / (materialAtivo.pesoTotal / 1000));
-      toast.success('Material ativado!');
-    }
-  };
-  
-  const handleDeletarMaterial = (id: string) => {
-    const materiaisAtualizados = materiais.filter(m => m.id !== id);
-    setMateriais(materiaisAtualizados);
-    localStorage.setItem('calculadora_materiais', JSON.stringify(materiaisAtualizados));
-    toast.success('Material removido!');
-  };
-
-  const handleCalcular = () => {
-    // Verificar limite de cálculos para usuários guest
-    if (userType === 'guest' && calculosRealizados >= 3) {
-      toast.error('Limite diário de teste atingido (3/3). Insira um token para acesso ilimitado!');
-      return;
-    }
-
-    const params: ParametrosCalculo = {
-      material,
-      peso,
-      precoKg,
-      tImp,
-      tPosHoras,
-      tPosMinutos,
-      exclusivo,
-      qtdKit,
-      descKit,
-      vHora,
-      cMaq,
-      estado,
-      mkpShopee,
-      mkpMl,
-      chkFrete,
-      vFrete,
-      chkRisco,
-      multExcl,
-      nomeMaquina,
-      chkIcms,
-      chkIss,
-      nomeCliente,
-      nomePeca,
-    };
-
-    const resultado = calcularPro(params);
-    setResUn(resultado.resUn);
-    setResKit(resultado.resKit);
-    setResUnCompleto(resultado.resUnCompleto);
-    setResKitCompleto(resultado.resKitCompleto);
-    setResZap(resultado.resZap);
-    setResCustoTotal(resultado.resCustoTotal);
-    addToHistorico(resultado);
-    
-    // Abater do estoque se PRO e checkbox marcado
-    if (userType === 'pro' && abaterDoEstoque && materiais.length > 0) {
-      const materialAtivo = materiais.find(m => m.emUso);
-      if (materialAtivo && peso > 0) {
-        const novoSaldo = materialAtivo.pesoRestante - peso;
-        if (novoSaldo < 0) {
-          toast.error('Peso insuficiente no material ativo!');
-        } else {
-          const materiaisAtualizados = materiais.map(m => 
-            m.id === materialAtivo.id 
-              ? { ...m, pesoRestante: novoSaldo }
-              : m
-          );
-          setMateriais(materiaisAtualizados);
-          localStorage.setItem('calculadora_materiais', JSON.stringify(materiaisAtualizados));
-          toast.success(`Abatido ${peso}g do material ${materialAtivo.nome}`);
-        }
-      }
-    }
-    
-    // Incrementar contador para usuários guest
-    if (userType === 'guest') {
-      const novoContador = calculosRealizados + 1;
-      setCalculosRealizados(novoContador);
-      localStorage.setItem('calculos_realizados', novoContador.toString());
-      
-      // Mostrar aviso se chegou perto do limite
-      if (novoContador === 2) {
-        toast.info('Você já usou 2 de 3 cálculos de teste. Insira um token para acesso ilimitado!');
-      }
-    }
-    
-    // Scroll automatico para resultados em dispositivos moveis
-    if (window.innerWidth < 1024) {
-      setTimeout(() => {
-        resultadosRef.current?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
-    }
-  };
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success("Copiado para a área de transferência!");
-  };
-
-  const saveConfig = () => {
-    if (userType === 'guest') {
-      toast.error('Função exclusiva para assinantes PRO! Adquira seu token.');
-      return;
-    }
     const config = {
       nomeMaquina,
       cMaq,
@@ -426,18 +164,43 @@ export default function Home() {
       descKit,
     };
     localStorage.setItem('calculadora_config', JSON.stringify(config));
-    toast.success('Configuração salva com sucesso!');
-  };
+  }, [nomeMaquina, cMaq, estado, vHora, vFrete, multExcl, chkIcms, chkIss, chkRisco, exclusivo, mkpShopee, mkpMl, chkFrete, descKit]);
 
-  const handleSaveDefaults = () => {
-    if (userType === 'guest') {
-      toast.error('Função exclusiva para assinantes PRO! Adquira seu token.');
+  const handleSalvarMaterial = () => {
+    if (!novoMaterial.nome.trim() || !novoMaterial.marca.trim() || novoMaterial.pesoTotal <= 0) {
+      toast.error('Preencha todos os campos corretamente');
       return;
     }
-    saveConfig();
+    const novoId = Date.now().toString();
+    const materialNovo = {
+      id: novoId,
+      nome: novoMaterial.nome,
+      marca: novoMaterial.marca,
+      precoPago: novoMaterial.precoPago,
+      pesoTotal: novoMaterial.pesoTotal,
+      pesoUsado: 0,
+    };
+    const novosMateriais = [...materiais, materialNovo];
+    setMateriais(novosMateriais);
+    localStorage.setItem('calculadora_materiais', JSON.stringify(novosMateriais));
+    setNovoMaterial({ nome: '', marca: '', precoPago: 0, pesoTotal: 0 });
+    toast.success('Material salvo com sucesso!');
   };
-  const savePecaPreferences = () => {
-    const pecaPreferences = {
+
+  const handleDeletarMaterial = (id: string) => {
+    const novosMateriais = materiais.filter(m => m.id !== id);
+    setMateriais(novosMateriais);
+    localStorage.setItem('calculadora_materiais', JSON.stringify(novosMateriais));
+    toast.success('Material removido');
+  };
+
+  const handleCalcular = () => {
+    if (!nomeCliente.trim() || !nomePeca.trim() || peso <= 0) {
+      toast.error('Preencha os campos obrigatórios');
+      return;
+    }
+
+    const parametros: ParametrosCalculo = {
       material,
       peso,
       precoKg,
@@ -445,63 +208,6 @@ export default function Home() {
       tPosHoras,
       tPosMinutos,
       qtdKit,
-    };
-    localStorage.setItem('calculadora_peca_preferences', JSON.stringify(pecaPreferences));
-    toast.success('Preferencias de peca salvas!');
-  };
-
-  const loadPecaPreferences = () => {
-    const saved = localStorage.getItem('calculadora_peca_preferences');
-    if (saved) {
-      const prefs = JSON.parse(saved);
-      setMaterial(prefs.material || 'PLA');
-      setPeso(prefs.peso || 0);
-      setPrecoKg(prefs.precoKg || 69.99);
-      setTImp(prefs.tImp || 0);
-      setTPosHoras(prefs.tPosHoras || 0);
-      setTPosMinutos(prefs.tPosMinutos || 0);
-      setQtdKit(prefs.qtdKit || 1);
-    }
-  };
-
-  const reorcarItem = (item: any) => {
-    setNomeCliente(item.cliente === 'Cliente' ? '' : item.cliente);
-    setNomePeca(item.peca === 'Peca' ? '' : item.peca);
-    setMaterial(item.material || 'PLA');
-    setPeso(item.peso || 0);
-    setPrecoKg(item.precoKg || 69.99);
-    setTImp(item.tImp || 0);
-    setTPosHoras(item.tPosHoras || 0);
-    setTPosMinutos(item.tPosMinutos || 0);
-    setQtdKit(item.qtdKit || 1);
-    setChkIcms(item.chkIcms || false);
-    setChkIss(item.chkIss || false);
-    setChkRisco(item.chkRisco !== undefined ? item.chkRisco : true);
-    setExclusivo(item.exclusivo || false);
-    setMkpShopee(item.mkpShopee || false);
-    setMkpMl(item.mkpMl || false);
-    setChkFrete(item.chkFrete || false);
-    setDescKit(item.descKit || 10);
-    toast.success('Dados carregados! Clique em CALCULAR para atualizar.');
-  };
-
-  const addToHistorico = (resultado?: any) => {
-    const novoItem = {
-      id: Date.now(),
-      data: new Date().toLocaleString('pt-BR'),
-      cliente: nomeCliente || 'Cliente',
-      peca: nomePeca || 'Peca',
-      precoUnitario: resultado?.resUn || resUn,
-      precoLote: resultado?.resKit || resKit,
-      quantidade: qtdKit,
-      custos: resCustoTotal,
-      whatsapp: resZap,
-      material,
-      peso,
-      precoKg,
-      tImp,
-      tPosHoras,
-      tPosMinutos,
       chkIcms,
       chkIss,
       chkRisco,
@@ -510,886 +216,311 @@ export default function Home() {
       mkpMl,
       chkFrete,
       descKit,
+      cMaq,
+      estado,
+      vHora,
+      vFrete,
+      multExcl,
     };
-    const novoHistorico = [novoItem, ...historico].slice(0, 200);
+
+    const resultado = calcularPro(parametros);
+
+    setResUn(resultado.resUn);
+    setResKit(resultado.resKit);
+    setResUnCompleto(resultado.resUnCompleto);
+    setResKitCompleto(resultado.resKitCompleto);
+    setResZap(resultado.resZap);
+    setResCustoTotal(resultado.resCustoTotal);
+
+    // Atualizar histórico
+    const novoCalculo = {
+      id: Date.now(),
+      nomeCliente,
+      nomePeca,
+      material,
+      peso,
+      data: new Date().toLocaleString('pt-BR'),
+      preco: resultado.resUn,
+    };
+
+    const novoHistorico = [novoCalculo, ...historico];
     setHistorico(novoHistorico);
     localStorage.setItem('calculadora_historico', JSON.stringify(novoHistorico));
+
+    // Incrementar contador de cálculos
+    const novoContador = calculosRealizados + 1;
+    setCalculosRealizados(novoContador);
+    localStorage.setItem('calculos_realizados', novoContador.toString());
+
+    // Scroll automático para resultados
+    setTimeout(() => {
+      resultadosRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+
+    toast.success('Cálculo realizado com sucesso!');
   };
 
-  const shareWhatsApp = () => {
-    if (userType === 'guest') {
-      toast.error('Função exclusiva para assinantes PRO! Adquira seu token.');
-      return;
-    }
-    if (!resZap) {
-      toast.error('Calcule primeiro!');
-      return;
-    }
-    const texto = encodeURIComponent(resZap);
-    window.open(`https://wa.me/?text=${texto}`, '_blank');
+  const handleCopiarResultado = (texto: string) => {
+    navigator.clipboard.writeText(texto);
+    toast.success('Copiado para a área de transferência!');
   };
 
-  const downloadOrcamento = () => {
-    const conteudo = `${resZap}\n\n---\n\nPreço Unitário:\n${resUn}\n\nPreço Total:\n${resKit}`;
-    const blob = new Blob([conteudo], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "orcamento.txt";
-    a.click();
-    URL.revokeObjectURL(url);
+  const handleDownloadPDF = () => {
+    toast.info('Funcionalidade de download em desenvolvimento');
   };
 
-  // Tela de Login
-  if (!isAuthenticated) {
-    return (
-      <div className={`min-h-screen transition-colors duration-300 flex items-center justify-center ${
-        isDarkMode
-          ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900'
-          : 'bg-gradient-to-br from-orange-50 to-orange-100'
-      } p-4`}>
-        <Card className={`w-full max-w-md ${isDarkMode ? 'bg-gray-800 border-gray-700' : ''}`}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Lock className="w-5 h-5" />
-              Acesso Restrito
-            </CardTitle>
-            <CardDescription>Digite seu token de acesso</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="token" className={isDarkMode ? 'text-white' : ''}>Token de Acesso</Label>
-              <div className="relative">
-                <Input
-                  id="token"
-                  type={showToken ? 'text' : 'password'}
-                  placeholder="Digite seu token"
-                  value={tokenInput}
-                  onChange={(e) => setTokenInput(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleTokenLogin()}
-                  className={`mt-1 pr-10 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : ''}`}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowToken(!showToken)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                >
-                  {showToken ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-            <Button
-              onClick={handleTokenLogin}
-              className="w-full bg-orange-500 hover:bg-orange-600 text-white"
-            >
-              Acessar
-            </Button>
-            <Button
-              onClick={() => {
-                setIsAuthenticated(true);
-                setUserType('guest');
-                localStorage.setItem('userType', 'guest');
-                if (!localStorage.getItem('calculos_realizados')) {
-                  localStorage.setItem('calculos_realizados', '0');
-                }
-                toast.success('Modo de teste ativado! Você tem 3 cálculos grátis.');
-              }}
-              variant="outline"
-              className="w-full"
-            >
-              Teste Grátis
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  const handleLimparHistorico = () => {
+    setHistorico([]);
+    localStorage.setItem('calculadora_historico', JSON.stringify([]));
+    toast.success('Histórico limpo');
+  };
+
+  const historicoFiltrado = historico.filter(item =>
+    item.nomeCliente.toLowerCase().includes(buscaHistorico.toLowerCase()) ||
+    item.nomePeca.toLowerCase().includes(buscaHistorico.toLowerCase())
+  );
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${
-      isDarkMode
-        ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900'
-        : 'bg-gradient-to-br from-orange-50 to-orange-100'
-    } p-4`}>
-      <div className="max-w-7xl mx-auto">
+    <div className={isDarkMode ? 'dark' : ''}>
+      <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
         {/* Header */}
-        <div className="text-center mb-8 flex justify-between items-center">
-          <h1 className={`text-4xl font-bold ${isDarkMode ? 'text-white' : 'text-orange-900'}`}>Calculadora 3D PRO V3.0</h1>
-          <Button
-            onClick={handleLogout}
-            variant="outline"
-            size="sm"
-            className={isDarkMode ? 'bg-gray-800 border-gray-700 text-white hover:bg-gray-700' : ''}
-          >
-            Sair
-          </Button>
-        </div>
-
-        <Tabs defaultValue="calculadora" className={`w-full ${isDarkMode ? 'dark' : ''}`}>
-          <div className="flex justify-center items-center gap-4 mb-8">
-            <TabsList className="grid grid-cols-4">
-              <TabsTrigger value="calculadora">📊 Calcular</TabsTrigger>
-              <TabsTrigger value="insumos">📦 Insumos</TabsTrigger>
-              <TabsTrigger value="configuracoes">⚙️ Ajustes</TabsTrigger>
-              <TabsTrigger value="historico">⏱️ Histórico</TabsTrigger>
-            </TabsList>
-            <Button
-              onClick={() => setIsDarkMode(!isDarkMode)}
-              variant="outline"
-              size="icon"
-              className={isDarkMode ? 'bg-gray-700 border-gray-600 text-white hover:bg-gray-600' : ''}
-            >
-              {isDarkMode ? '☀️' : '🌙'}
-            </Button>
-          </div>
-
-          <TabsContent value="calculadora">
-            {/* Grid Único Responsivo: 1 coluna mobile, 3 colunas desktop */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6" id="cards-container">
-              {/* Coluna 1: Dados da Peça */}
-              <Card className={isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : ''}>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="text-lg">📦 Dados da Peça</CardTitle>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={savePecaPreferences}
-                    title="Salvar estes valores como padrao"
-                    className={isDarkMode ? 'text-gray-400 hover:text-white hover:bg-gray-700' : ''}
-                  >
-                    <Save className="w-4 h-4" />
-                  </Button>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <Label htmlFor="cliente" className={isDarkMode ? 'text-white' : ''}>Cliente</Label>
-                      <Input
-                        id="cliente"
-                        placeholder="Nome"
-                        value={nomeCliente}
-                        onChange={(e) => setNomeCliente(e.target.value)}
-                        className="mt-1"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="peca" className={isDarkMode ? 'text-white' : ''}>Peça</Label>
-                      <Input
-                        id="peca"
-                        placeholder="Descrição"
-                        value={nomePeca}
-                        onChange={(e) => setNomePeca(e.target.value)}
-                        className="mt-1"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-2">
-                    <div>
-                      <Label htmlFor="material" className={isDarkMode ? 'text-white' : ''}>Material</Label>
-                      <Select value={material} onValueChange={setMaterial}>
-                        <SelectTrigger id="material" className="mt-1 w-full">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="PLA">PLA</SelectItem>
-                          <SelectItem value="PETG">PETG</SelectItem>
-                          <SelectItem value="ABS">ABS</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="peso" className={isDarkMode ? 'text-white' : ''}>Peso (g)</Label>
-                      <Input
-                        id="peso"
-                        type="number"
-                        value={peso || ""}
-                        onChange={(e) => setPeso(e.target.value ? parseFloat(e.target.value) : 0)}
-                        className="mt-1 w-full"
-                      />
-                      {userType === 'pro' && materiais.length > 0 && (() => {
-                        const materialAtivo = materiais.find(m => m.emUso);
-                        if (materialAtivo && materialAtivo.pesoRestante < 100) {
-                          return (
-                            <div className="mt-2 p-2 bg-red-100 border border-red-400 rounded text-red-700 text-sm flex items-center gap-2">
-                              <AlertCircle className="w-4 h-4" />
-                              Atencao: Estoque de {materialAtivo.nome} esta acabando!
-                            </div>
-                          );
-                        }
-                        return null;
-                      })()}
-                    </div>
-
-                    <div>
-                      <Label htmlFor="preco-kg" className={isDarkMode ? 'text-white' : ''}>KG (R$)</Label>
-                      <Input
-                        id="preco-kg"
-                        type="number"
-                        step="0.01"
-                        value={precoKg || ""}
-                        onChange={(e) => setPrecoKg(e.target.value ? parseFloat(e.target.value) : 0)}
-                        className="mt-1 w-full"
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="t-imp" className={isDarkMode ? 'text-white' : ''}>Impressão(h)</Label>
-                      <TimeMaskInput
-                        value={tImp.toString()}
-                        onChange={(value) => {
-                          let decimalTime = 0;
-                          if (!value.includes(':')) {
-                            decimalTime = parseFloat(value) || 0;
-                          } else {
-                            const parts = value.split(':');
-                            const hours = parseFloat(parts[0]) || 0;
-                            const minutes = parseFloat(parts[1]) || 0;
-                            decimalTime = hours + minutes / 60;
-                          }
-                          setTImp(decimalTime);
-                        }}
-                        placeholder="00:00"
-                        isDarkMode={isDarkMode}
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="t-pos" className={isDarkMode ? 'text-white' : ''}>Refino(h)</Label>
-                      <TimeMaskInput
-                        value={(tPosHoras + tPosMinutos / 60).toString()}
-                        onChange={(value) => {
-                          let decimalTime = 0;
-                          if (!value.includes(':')) {
-                            decimalTime = parseFloat(value) || 0;
-                          } else {
-                            const parts = value.split(':');
-                            const hours = parseFloat(parts[0]) || 0;
-                            const minutes = parseFloat(parts[1]) || 0;
-                            decimalTime = hours + minutes / 60;
-                          }
-                          setTPosHoras(Math.floor(decimalTime));
-                          setTPosMinutos(Math.round((decimalTime % 1) * 60));
-                        }}
-                        placeholder="00:00"
-                        isDarkMode={isDarkMode}
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="qtd" className={isDarkMode ? 'text-white' : ''}>Quantidade</Label>
-                      <Input
-                        id="qtd"
-                        type="number"
-                        value={qtdKit || ""}
-                        onChange={(e) => setQtdKit(e.target.value ? parseFloat(e.target.value) : 1)}
-                        className="mt-1 w-full"
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Coluna 2: Taxas e Impostos */}
-              <Card className={isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : ''}>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="text-lg">🛍 Taxas e Impostos</CardTitle>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={saveConfig}
-                    title="Salvar estes valores como padrao"
-                    className={isDarkMode ? 'text-gray-400 hover:text-white hover:bg-gray-700' : ''}
-                  >
-                    <Save className="w-4 h-4" />
-                  </Button>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="icms"
-                        checked={chkIcms}
-                        onCheckedChange={(checked) => setChkIcms(checked as boolean)}
-                      />
-                      <Label htmlFor="icms" className="cursor-pointer text-sm">
-                        ICMS (Estado)
-                      </Label>
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="iss"
-                        checked={chkIss}
-                        onCheckedChange={(checked) => setChkIss(checked as boolean)}
-                      />
-                      <Label htmlFor="iss" className="cursor-pointer text-sm">
-                        ISS (5%)
-                      </Label>
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="risco"
-                        checked={chkRisco}
-                        onCheckedChange={(checked) => setChkRisco(checked as boolean)}
-                      />
-                      <Label htmlFor="risco" className="cursor-pointer text-sm">
-                        10% Risco/Falha
-                      </Label>
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="exclusivo"
-                        checked={exclusivo}
-                        onCheckedChange={(checked) => setExclusivo(checked as boolean)}
-                      />
-                      <Label htmlFor="exclusivo" className="cursor-pointer text-sm">
-                        💎 Modelagem Própria
-                      </Label>
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="shopee"
-                        checked={mkpShopee}
-                        onCheckedChange={(checked) => setMkpShopee(checked as boolean)}
-                      />
-                      <Label htmlFor="shopee" className="cursor-pointer text-sm">
-                        Shopee (15%)
-                      </Label>
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="ml"
-                        checked={mkpMl}
-                        onCheckedChange={(checked) => setMkpMl(checked as boolean)}
-                      />
-                      <Label htmlFor="ml" className="cursor-pointer text-sm">
-                        Mercado Livre (17%)
-                      </Label>
-                    </div>
-
-                    <div className="flex items-center space-x-2 col-span-2">
-                      <Checkbox
-                        id="frete"
-                        checked={chkFrete}
-                        onCheckedChange={(checked) => setChkFrete(checked as boolean)}
-                      />
-                      <Label htmlFor="frete" className="cursor-pointer text-sm">
-                        Incluir Frete
-                      </Label>
-                    </div>
-                  </div>
-
-                  {chkFrete && (
-                    <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                      <Label htmlFor="v-frete-modal">Valor Frete (R$)</Label>
-                      <Input
-                        id="v-frete-modal"
-                        type="number"
-                        step="0.01"
-                        value={vFrete || ""}
-                        onChange={(e) => setVFrete(e.target.value ? parseFloat(e.target.value) : 0)}
-                        className="mt-1"
-                      />
-                    </div>
-                  )}
-
-                  <div className="pt-4 border-t">
-                    <Label htmlFor="desc-kit">Desconto Kit (%): {descKit}%</Label>
-                    <Slider
-                      id="desc-kit"
-                      min={0}
-                      max={50}
-                      step={1}
-                      value={[descKit]}
-                      onValueChange={(value) => setDescKit(value[0])}
-                      className="mt-2"
-                    />
-                  </div>
-
-                  {userType === 'pro' && materiais.length > 0 && (
-                    <div className="flex items-center space-x-2 pt-4">
-                      <Checkbox
-                        id="abater"
-                        checked={abaterDoEstoque}
-                        onCheckedChange={(checked) => setAbaterDoEstoque(checked as boolean)}
-                      />
-                      <Label htmlFor="abater" className="cursor-pointer text-sm">
-                        Abater do estoque
-                      </Label>
-                    </div>
-                  )}
-                  
-                  {userType === 'guest' && (
-                    <div className="flex items-center space-x-2 pt-4 opacity-50 cursor-not-allowed">
-                      <Checkbox id="abater-guest" disabled />
-                      <Label htmlFor="abater-guest" className="cursor-not-allowed text-sm text-gray-500">
-                        Abater do estoque (Exclusivo PRO)
-                      </Label>
-                    </div>
-                  )}
-
-                  <Button
-                    onClick={handleCalcular}
-                    className="w-full bg-orange-500 hover:bg-orange-600 text-white py-6 text-lg font-bold rounded-lg mt-4"
-                  >
-                    CALCULAR
-                  </Button>
-                  
-                  {userType === 'guest' && (
-                    <div className="mt-3 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                      <p className="text-sm text-yellow-800 font-semibold">
-                        Você usou {calculosRealizados} de 3 cálculos diários gratuitos
-                      </p>
-                      {calculosRealizados >= 3 && (
-                        <p className="text-xs text-red-600 mt-1">
-                          Limite atingido! Insira um token para acesso ilimitado.
-                        </p>
-                      )}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Coluna 3: Resultados */}
-              <Card ref={resultadosRef} className={isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : ''}>
-                <CardHeader>
-                  <CardTitle className="text-lg">💰 Resultados</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {resUn ? (
-                    <>
-                      <div>
-                        <Label className="text-sm text-gray-600">Preço Unitário</Label>
-                        <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                          <p className="text-sm font-mono text-blue-900" style={{color: '#000000'}}>{resUnCompleto}</p>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => copyToClipboard(resUnCompleto)}
-                            className="mt-2 w-full" style={{color: '#ff6900'}}
-                          >
-                            <Copy className="w-4 h-4 mr-2" />
-                            Copiar
-                          </Button>
-                        </div>
-                      </div>
-
-                      {qtdKit > 1 && (
-                        <div>
-                          <Label className="text-sm text-gray-600">Preço Total (Lote)</Label>
-                          <div className="mt-2 p-3 bg-green-50 rounded-lg border border-green-200">
-                            <p className="text-sm font-mono text-green-900">{resKitCompleto}</p>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => copyToClipboard(resKitCompleto)}
-                              className="mt-2 w-full" style={{color: '#ff6900'}}
-                            >
-                              <Copy className="w-4 h-4 mr-2" />
-                              Copiar
-                            </Button>
-                          </div>
-                        </div>
-                      )}
-
-                      <div>
-                        <Label className="text-sm text-gray-600">Custos Totais</Label>
-                        <div className="mt-2 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                          <p className="text-sm font-mono text-yellow-900">{resCustoTotal}</p>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => copyToClipboard(resCustoTotal)}
-                            className="mt-2 w-full" style={{color: '#ff6900'}}
-                          >
-                            <Copy className="w-4 h-4 mr-2" />
-                            Copiar
-                          </Button>
-                        </div>
-                      </div>
-
-                      <div>
-                        <Label className="text-sm text-gray-600">WhatsApp</Label>
-                        <div className="mt-2 p-3 bg-purple-50 rounded-lg border border-purple-200">
-                          <p className="text-xs font-mono text-purple-900 whitespace-pre-wrap">
-                            {resZap}
-                          </p>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => copyToClipboard(resZap)}
-                            className="mt-2 w-full" style={{color: '#ff6900'}}
-                          >
-                            <Copy className="w-4 h-4 mr-2" />
-                            Copiar
-                          </Button>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2">
-                        <Button
-                          onClick={shareWhatsApp}
-                          className="w-full bg-green-500 hover:bg-green-600 text-white"
-                        >
-                          <Share2 className="w-4 h-4 mr-2" />
-                          WhatsApp
-                        </Button>
-                        <Button
-                          onClick={downloadOrcamento}
-                          variant="outline"
-                          className="w-full"
-                        >
-                          <Download className="w-4 h-4 mr-2" />
-                          Baixar
-                        </Button>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center py-12 text-center">
-                      <div className="text-4xl mb-3">📊</div>
-                      <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                        Preencha os dados e clique em CALCULAR para ver os resultados
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+        <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="container flex h-14 items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Lock className="h-6 w-6 text-orange-500" />
+              <h1 className="text-xl font-bold">Calculadora 3D PRO</h1>
             </div>
-          </TabsContent>
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsDarkMode(!isDarkMode)}
+              >
+                {isDarkMode ? '☀️' : '🌙'}
+              </Button>
+              <div className="text-sm text-muted-foreground">
+                {userType === 'pro' ? '✓ PRO' : 'Guest'}
+              </div>
+            </div>
+          </div>
+        </header>
 
-          <TabsContent value="insumos">
-            <Card className={isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : ''}>
+        {/* Main Content */}
+        <main className="container py-8 space-y-8">
+          {/* Seção de Cálculo */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Calculadora de Preço</CardTitle>
+              <CardDescription>Insira os dados da peça para calcular o preço</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="nomeCliente">Nome do Cliente</Label>
+                  <Input
+                    id="nomeCliente"
+                    value={nomeCliente}
+                    onChange={(e) => setNomeCliente(e.target.value)}
+                    placeholder="Ex: João Silva"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="nomePeca">Nome da Peça</Label>
+                  <Input
+                    id="nomePeca"
+                    value={nomePeca}
+                    onChange={(e) => setNomePeca(e.target.value)}
+                    placeholder="Ex: Suporte de Parede"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="material">Material</Label>
+                  <Select value={material} onValueChange={setMaterial}>
+                    <SelectTrigger id="material">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="PLA">PLA</SelectItem>
+                      <SelectItem value="PETG">PETG</SelectItem>
+                      <SelectItem value="ABS">ABS</SelectItem>
+                      <SelectItem value="TPU">TPU</SelectItem>
+                      <SelectItem value="Nylon">Nylon</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="peso">Peso (g)</Label>
+                  <Input
+                    id="peso"
+                    type="number"
+                    value={peso}
+                    onChange={(e) => setPeso(parseFloat(e.target.value) || 0)}
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="precoKg">Preço do Kg (R$)</Label>
+                  <CurrencyInput
+                    id="precoKg"
+                    value={precoKg}
+                    onChange={setPrecoKg}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="tImp">Tempo de Impressão (h)</Label>
+                  <Input
+                    id="tImp"
+                    type="number"
+                    value={tImp}
+                    onChange={(e) => setTImp(parseFloat(e.target.value) || 0)}
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="tPosHoras">Tempo Pós-Processamento (h)</Label>
+                  <Input
+                    id="tPosHoras"
+                    type="number"
+                    value={tPosHoras}
+                    onChange={(e) => setTPosHoras(parseFloat(e.target.value) || 0)}
+                    placeholder="0"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="tPosMinutos">Tempo Pós-Processamento (min)</Label>
+                  <Input
+                    id="tPosMinutos"
+                    type="number"
+                    value={tPosMinutos}
+                    onChange={(e) => setTPosMinutos(parseFloat(e.target.value) || 0)}
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="qtdKit">Quantidade de Kits</Label>
+                <Slider
+                  id="qtdKit"
+                  min={1}
+                  max={100}
+                  step={1}
+                  value={[qtdKit]}
+                  onValueChange={(value) => setQtdKit(value[0])}
+                  className="w-full"
+                />
+                <div className="text-sm text-muted-foreground">Quantidade: {qtdKit}</div>
+              </div>
+
+              <Button onClick={handleCalcular} className="w-full bg-orange-500 hover:bg-orange-600">
+                Calcular Preço
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Resultados */}
+          {resUn && (
+            <Card ref={resultadosRef}>
               <CardHeader>
-                <CardTitle className={isDarkMode ? 'text-white' : ''}>📦 Gerenciar Insumos</CardTitle>
-                <CardDescription className={isDarkMode ? 'text-gray-400' : ''}>Cadastre e gerencie seus materiais de impressao</CardDescription>
+                <CardTitle>Resultados</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Formulario de Novo Material */}
-                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                  <h3 className="font-semibold text-blue-900 mb-4">Adicionar Novo Material</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="material-nome" className={isDarkMode ? 'text-white' : ''}>Nome do Material</Label>
-                      <Select value={novoMaterial.nome} onValueChange={(value) => setNovoMaterial({...novoMaterial, nome: value})}>
-                        <SelectTrigger id="material-nome" className={`mt-1 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : ''}`}>
-                          <SelectValue placeholder="Selecione" />
-                        </SelectTrigger>
-                        <SelectContent className={isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : ''}>
-                          <SelectItem value="PLA">PLA</SelectItem>
-                          <SelectItem value="PETG">PETG</SelectItem>
-                          <SelectItem value="ABS">ABS</SelectItem>
-                          <SelectItem value="TPU">TPU</SelectItem>
-                          <SelectItem value="Nylon">Nylon</SelectItem>
-                          <SelectItem value="Resina">Resina</SelectItem>
-                          <SelectItem value="Outro">Outro</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label htmlFor="material-marca" className={isDarkMode ? 'text-white' : ''}>Marca</Label>
-                      <Input
-                        id="material-marca"
-                        placeholder="Ex: Bambu Lab"
-                        value={novoMaterial.marca}
-                        onChange={(e) => setNovoMaterial({...novoMaterial, marca: e.target.value})}
-                        className="mt-1"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="material-preco" className={isDarkMode ? 'text-white' : ''}>Preço Pago (R$)</Label>
-                      <CurrencyInput
-                        id="material-preco"
-                        value={Math.round(novoMaterial.precoPago * 100)}
-                        onChange={(value) => setNovoMaterial({...novoMaterial, precoPago: value / 100})}
-                        placeholder="0,00"
-                        className="mt-1"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="material-peso" className={isDarkMode ? 'text-white' : ''}>Peso Total (g)</Label>
-                      <Input
-                        id="material-peso"
-                        type="number"
-                        placeholder="1000"
-                        value={novoMaterial.pesoTotal || ''}
-                        onChange={(e) => setNovoMaterial({...novoMaterial, pesoTotal: parseFloat(e.target.value) || 0})}
-                        className="mt-1"
-                      />
-                    </div>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-4 bg-muted rounded-lg">
+                    <div className="text-sm text-muted-foreground">Preço Unitário</div>
+                    <div className="text-2xl font-bold">{resUn}</div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleCopiarResultado(resUn)}
+                      className="mt-2"
+                    >
+                      <Copy className="h-4 w-4 mr-2" /> Copiar
+                    </Button>
                   </div>
-                  <Button
-                    onClick={handleSalvarMaterial}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white mt-4"
-                  >
-                    Salvar Material
-                  </Button>
-                </div>
-
-                {/* Lista de Materiais */}
-                <div>
-                  <h3 className="font-semibold mb-4">Materiais Cadastrados</h3>
-                  {materiais.length === 0 ? (
-                    <p className={`text-center py-8 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                      Nenhum material cadastrado ainda
-                    </p>
-                  ) : (
-                    <div className="space-y-3">
-                      {materiais.map((mat) => {
-                        const critico = mat.pesoRestante < 100;
-                        return (
-                          <div
-                            key={mat.id}
-                            className={`p-4 rounded-lg border ${
-                              isDarkMode
-                                ? 'bg-gray-700 border-gray-600'
-                                : 'bg-gray-50 border-gray-200'
-                            } ${critico ? 'border-red-500 border-2' : ''}`}
-                          >
-                            <div className="flex justify-between items-start mb-2">
-                              <div className="flex-1">
-                                <p className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                                  {mat.nome} - {mat.marca}
-                                  {mat.emUso && <span className="ml-2 text-green-500 font-bold">✓ Em Uso</span>}
-                                  {critico && <span className="ml-2 text-red-500 font-bold">⚠ Critico</span>}
-                                </p>
-                                <p className={`text-sm ${
-                                  critico 
-                                    ? 'text-red-500 font-bold' 
-                                    : isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                                }`}>
-                                  Peso: {mat.pesoRestante}g / {mat.pesoTotal}g | Preco: R$ {mat.precoPago.toFixed(2)}
-                                </p>
-                              </div>
-                              <div className="flex gap-2">
-                                {!mat.emUso && (
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => handleAtivarMaterial(mat.id)}
-                                    className={isDarkMode ? 'bg-gray-600 border-gray-500 text-white hover:bg-gray-500' : ''}
-                                  >
-                                    Ativar
-                                  </Button>
-                                )}
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => handleDeletarMaterial(mat.id)}
-                                  className={isDarkMode ? 'text-red-400 hover:bg-gray-600' : 'text-red-600'}
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="configuracoes">
-            <Card className={isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : ''}>
-              <CardHeader>
-                <CardTitle className={isDarkMode ? 'text-white' : ''}>⚙️ Configurações</CardTitle>
-                <CardDescription className={isDarkMode ? 'text-gray-400' : ''}>Defina os parâmetros padrão da sua operação</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <Label htmlFor="maquina" className={isDarkMode ? 'text-white' : ''}>Máquina Padrão</Label>
-                    <Select value={nomeMaquina} onValueChange={setNomeMaquina}>
-                      <SelectTrigger id="maquina" className="mt-1">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(maquinasBrasil).map(([nome]) => (
-                          <SelectItem key={nome} value={nome}>
-                            {nome}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="custo-maq" className={isDarkMode ? 'text-white' : ''}>Custo Máquina (R$/h)</Label>
-                    <Input
-                      id="custo-maq"
-                      type="number"
-                      step="0.01"
-                      value={cMaq || ""}
-                      onChange={(e) => setCMaq(e.target.value ? parseFloat(e.target.value) : 0)}
-                      className="mt-1"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="estado" className={isDarkMode ? 'text-white' : ''}>Estado</Label>
-                    <Select value={estado} onValueChange={setEstado}>
-                      <SelectTrigger id="estado" className="mt-1">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.keys(aliquotasIcms).map((uf) => (
-                          <SelectItem key={uf} value={uf}>
-                            {uf}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="v-hora" className={isDarkMode ? 'text-white' : ''}>Sua Hora (R$)</Label>
-                    <Input
-                      id="v-hora"
-                      type="number"
-                      step="0.01"
-                      value={vHora || ""}
-                      onChange={(e) => setVHora(e.target.value ? parseFloat(e.target.value) : 0)}
-                      className="mt-1"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="mult-excl" className={isDarkMode ? 'text-white' : ''}>Multiplicador Exclusivo</Label>
-                    <Input
-                      id="mult-excl"
-                      type="number"
-                      step="0.1"
-                      value={multExcl || ""}
-                      onChange={(e) => setMultExcl(e.target.value ? parseFloat(e.target.value) : 0)}
-                      className="mt-1"
-                    />
+                  <div className="p-4 bg-muted rounded-lg">
+                    <div className="text-sm text-muted-foreground">Preço por Kit</div>
+                    <div className="text-2xl font-bold">{resKit}</div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleCopiarResultado(resKit)}
+                      className="mt-2"
+                    >
+                      <Copy className="h-4 w-4 mr-2" /> Copiar
+                    </Button>
                   </div>
                 </div>
-                <Button
-                  onClick={saveConfig}
-                  className="w-full bg-orange-500 hover:bg-orange-600 text-white mt-4"
-                >
-                  Salvar Configurações
+
+                <div className="p-4 bg-orange-500/10 border border-orange-500/20 rounded-lg">
+                  <div className="text-sm text-muted-foreground">Custo Total</div>
+                  <div className="text-3xl font-bold text-orange-500">{resCustoTotal}</div>
+                </div>
+
+                <Button onClick={handleDownloadPDF} variant="outline" className="w-full">
+                  <Download className="h-4 w-4 mr-2" /> Baixar PDF
                 </Button>
               </CardContent>
             </Card>
-          </TabsContent>
+          )}
 
-          <TabsContent value="historico">
-            <Card className={isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : ''}>
-              <CardHeader>
-                <CardTitle className={isDarkMode ? 'text-white' : ''}>⚡️ Histórico de Orçamentos</CardTitle>
-                <CardDescription className={isDarkMode ? 'text-gray-400' : ''}>Todos os orçamentos calculados</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
+          {/* Histórico */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Histórico de Cálculos</CardTitle>
+              <CardDescription>Últimos cálculos realizados</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex gap-2">
                 <Input
-                  placeholder="Buscar por cliente ou peca..."
+                  placeholder="Buscar por cliente ou peça..."
                   value={buscaHistorico}
                   onChange={(e) => setBuscaHistorico(e.target.value)}
-                  className={isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : ''}
                 />
-                {historico.length === 0 ? (
-                  <p className={`text-center py-8 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Nenhum orçamento calculado ainda</p>
+                <Button
+                  variant="outline"
+                  onClick={handleLimparHistorico}
+                  disabled={historico.length === 0}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+
+              <div className="space-y-2">
+                {historicoFiltrado.length === 0 ? (
+                  <div className="text-center text-muted-foreground py-8">
+                    Nenhum cálculo realizado ainda
+                  </div>
                 ) : (
-                  <div className="space-y-3">
-                    {historico
-                      .filter((item) =>
-                        item.cliente.toLowerCase().includes(buscaHistorico.toLowerCase()) ||
-                        item.peca.toLowerCase().includes(buscaHistorico.toLowerCase())
-                      )
-                      .map((item) => (
-                      <div
-                        key={item.id}
-                        className={`p-4 rounded-lg border ${
-                          isDarkMode
-                            ? 'bg-gray-700 border-gray-600'
-                            : 'bg-gray-50 border-gray-200'
-                        }`}
-                      >
-                        {/* Título: Cliente - Peça */}
-                        <div className="flex justify-between items-start mb-3">
-                          <p className={`font-semibold text-base ${
-                            isDarkMode ? 'text-white' : 'text-gray-900'
-                          }`}>
-                            {item.cliente} - {item.peca}
-                          </p>
+                  historicoFiltrado.map((item) => (
+                    <div key={item.id} className="p-3 border border-border rounded-lg">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className="font-semibold">{item.nomeCliente}</div>
+                          <div className="text-sm text-muted-foreground">{item.nomePeca}</div>
+                          <div className="text-xs text-muted-foreground">{item.data}</div>
                         </div>
-
-                        {/* Data + Botão Reorçar */}
-                        <div className="flex justify-between items-center mb-3">
-                          <p className={`text-xs ${
-                            isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                          }`}>
-                            {item.data}
-                          </p>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => reorcarItem(item)}
-                            className={`text-xs ${isDarkMode ? 'text-orange-400 hover:text-orange-300' : 'text-orange-600 hover:text-orange-700'}`}
-                            title="Reorçar este item"
-                          >
-                            Reorçar
-                          </Button>
-                        </div>
-
-                        {/* Valores: Unitário + Lote (condicional) */}
-                        <div className={`py-2 border-t border-b ${
-                          isDarkMode ? 'border-gray-600' : 'border-gray-300'
-                        }`}>
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-lg">💰</span>
-                            <span className={`font-semibold ${
-                              isDarkMode ? 'text-orange-400' : 'text-orange-600'
-                            }`}>
-                              {item.precoUnitario}
-                            </span>
-                          </div>
-                          {item.quantidade > 1 && (
-                            <div className="flex items-center gap-2">
-                              <span className="text-lg">📦</span>
-                              <span className={`font-semibold ${
-                                isDarkMode ? 'text-green-400' : 'text-green-600'
-                              }`}>
-                                {item.precoLote || 'R$ 0,00'}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Rodapé: Tags técnicas + Botão Copiar */}
-                        <div className="flex justify-between items-center mt-3">
-                          <p className={`text-xs ${
-                            isDarkMode ? 'text-gray-500' : 'text-gray-500'
-                          }`}>
-                            {item.material} | {item.peso} | Qtd: {item.quantidade}
-                          </p>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => copyToClipboard(item.whatsapp)}
-                            className="p-1 h-auto"
-                            title="Copiar para clipboard"
-                          >
-                            <Copy className="w-3 h-3" />
-                          </Button>
+                        <div className="text-right">
+                          <div className="font-bold text-orange-500">{item.preco}</div>
+                          <div className="text-xs text-muted-foreground">{item.material}</div>
                         </div>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))
                 )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+              </div>
+            </CardContent>
+          </Card>
+        </main>
       </div>
     </div>
   );
