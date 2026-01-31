@@ -33,6 +33,7 @@ import {
   clearAuthFromLocalStorage,
 } from "@/lib/auth";
 import { registrarSessao, validarSessao, encerrarSessao, validarNovoDispositivo, registrarDispositivo } from "@/lib/supabase";
+import { executarMigracoes } from "@/lib/migrations";
 import { useState, useEffect, useRef } from "react";
 
 export default function Home() {
@@ -267,6 +268,9 @@ export default function Home() {
 
     // Registrar dispositivo no histórico
     await registrarDispositivo(tokenInput, currentFingerprint);
+
+    // Executar migrações automáticas na primeira vez
+    await executarMigracoes();
 
     // Se ja existe um fingerprint salvo e nao corresponde
     if (savedFingerprint && !isSameDevice(savedFingerprint, currentFingerprint)) {
