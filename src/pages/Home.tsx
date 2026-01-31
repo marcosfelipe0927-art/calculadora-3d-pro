@@ -32,7 +32,7 @@ import {
   isSameDevice,
   clearAuthFromLocalStorage,
 } from "@/lib/auth";
-import { registrarSessao, validarSessao, encerrarSessao } from "@/lib/supabase";
+import { registrarSessao, validarSessao, encerrarSessao, validarNovoDispositivo, registrarDispositivo } from "@/lib/supabase";
 import { useState, useEffect, useRef } from "react";
 
 export default function Home() {
@@ -251,12 +251,22 @@ export default function Home() {
       return;
     }
 
+    // Validar se pode logar em um novo dispositivo (limite de 3)
+    const validacaoDispositivo = await validarNovoDispositivo(tokenInput, currentFingerprint);
+    if (!validacaoDispositivo.permitido) {
+      toast.error(validacaoDispositivo.motivo || "Nao eh possivel logar neste dispositivo");
+      return;
+    }
+
     // Registrar sessão no Supabase
     const sessao = await registrarSessao(tokenInput, currentFingerprint);
     if (!sessao) {
       toast.error("Erro ao registrar sessão. Tente novamente.");
       return;
     }
+
+    // Registrar dispositivo no histórico
+    await registrarDispositivo(tokenInput, currentFingerprint);
 
     // Se ja existe um fingerprint salvo e nao corresponde
     if (savedFingerprint && !isSameDevice(savedFingerprint, currentFingerprint)) {

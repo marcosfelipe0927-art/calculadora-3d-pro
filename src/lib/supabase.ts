@@ -142,3 +142,154 @@ export async function encerrarSessao(token: string): Promise<boolean> {
     return false;
   }
 }
+
+// Função para validar se o token pode logar em um novo dispositivo
+export async function validarNovoDispositivo(token: string, fingerprintId: string): Promise<{ permitido: boolean; motivo?: string; bloqueadoAte?: string }> {
+  try {
+    // Buscar todos os dispositivos já usados com este token
+    const { data: dispositivos, error: erroLeitura } = await supabase
+      .from('historico_dispositivos')
+      .select('*')
+      .eq('token', token);
+
+    if (erroLeitura) {
+      console.error('[SUPABASE] Erro ao buscar dispositivos:', erroLeitura);
+      return { permitido: false, motivo: 'Erro ao validar dispositivo' };
+    }
+
+    // Verificar se o token está bloqueado
+    if (dispositivos && dispositivos.length > 0) {
+      const primeiroDispositivo = dispositivos[0];
+      if (primeiroDispositivo.bloqueado_ate) {
+        const bloqueadoAte = new Date(primeiroDispositivo.bloqueado_ate);
+        const agora = new Date();
+        
+        if (agora < bloqueadoAte) {
+          // Token ainda está bloqueado
+          const dataFormatada = bloqueadoAte.toLocaleDateString('pt-BR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+          
+          console.log('[SUPABASE] Token bloqueado até:', dataFormatada);
+          return {
+            permitido: false,
+            motivo: `Limite de 3 dispositivos atingido. Este token está bloqueado para novos aparelhos até ${dataFormatada}.`,
+            bloqueadoAte: bloqueadoAte.toISOString()
+          };
+        }
+      }
+    }
+
+    // Verificar se este fingerprint já foi usado
+    const dispositivoExistente = dispositivos?.find(d => d.fingerprint_id === fingerprintId);
+    if (dispositivoExistente) {
+      // Atualizar último acesso
+      await supabase
+        .from('historico_dispositivos')
+        .update({ ultimo_acesso: new Date().toISOString() })
+        .eq('id', dispositivoExistente.id);
+      
+      return { permitido: true };
+    }
+
+    // Contar quantos dispositivos diferentes já usaram este token
+    const quantidadeDispositivos = dispositivos?.length || 0;
+
+    if (quantidadeDispositivos >= 3) {
+      // Já tem 3 dispositivos, bloquear para novos
+      const bloqueadoAte = new Date();
+      bloqueadoAte.setDate(bloqueadoAte.getDate() + 15); // Bloquear por 15 dias
+
+      // Atualizar todos os registros deste token com bloqueado_ate
+      await supabase
+        .from('historico_dispositivos')
+        .update({
+          bloqueado_ate: bloqueadoAte.toISOString(),
+          motivo_bloqueio: 'Limite de 3 dispositivos atingido'
+        })
+        .eq('token', token);
+
+      // Registrar tentativa bloqueada
+      await supabase
+        .from('tentativas_bloqueadas')
+        .insert({
+          token,
+          fingerprint_id: fingerprintId,
+          motivo: 'Limite de 3 dispositivos atingido'
+        });
+
+      const dataFormatada = bloqueadoAte.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      return {
+        permitido: false,
+        motivo: `Limite de 3 dispositivos atingido. Este token está bloqueado para novos aparelhos até ${dataFormatada}.`,
+        bloqueadoAte: bloqueadoAte.toISOString()
+      };
+    }
+
+    // Permitir login e registrar novo dispositivo
+    return { permitido: true };
+  } catch (err) {
+    console.error('[SUPABASE] Erro inesperado ao validar dispositivo:', err);
+    return { permitido: false, motivo: 'Erro ao validar dispositivo' };
+  }
+}
+
+// Função para registrar um novo dispositivo no histórico
+export async function registrarDispositivo(token: string, fingerprintId: string): Promise<boolean> {
+  try {
+    // Verificar se este dispositivo já foi registrado
+    const { data: existente, error: erroVerificacao } = await supabase
+      .from('historico_dispositivos')
+      .select('*')
+      .eq('token', token)
+      .eq('fingerprint_id', fingerprintId)
+      .single();
+
+    if (erroVerificacao && erroVerificacao.code !== 'PGRST116') {
+      console.error('[SUPABASE] Erro ao verificar dispositivo:', erroVerificacao);
+      return false;
+    }
+
+    if (existente) {
+      // Dispositivo já existe, apenas atualizar último acesso
+      await supabase
+        .from('historico_dispositivos')
+        .update({ ultimo_acesso: new Date().toISOString() })
+        .eq('id', existente.id);
+      
+      return true;
+    }
+
+    // Registrar novo dispositivo
+    const { error } = await supabase
+      .from('historico_dispositivos')
+      .insert({
+        token,
+        fingerprint_id: fingerprintId,
+        primeiro_acesso: new Date().toISOString(),
+        ultimo_acesso: new Date().toISOString()
+      });
+
+    if (error) {
+      console.error('[SUPABASE] Erro ao registrar dispositivo:', error);
+      return false;
+    }
+
+    console.log('[SUPABASE] Dispositivo registrado:', fingerprintId);
+    return true;
+  } catch (err) {
+    console.error('[SUPABASE] Erro inesperado ao registrar dispositivo:', err);
+    return false;
+  }
+}
