@@ -174,6 +174,24 @@ export default function Home() {
     if (savedUserType) {
       setUserType(savedUserType);
     }
+
+    // Validacao periodica de fingerprint
+    const validacaoInterval = setInterval(() => {
+      const token = getTokenFromLocalStorage();
+      const savedFp = getFingerprintFromLocalStorage();
+      const currentFp = generateFingerprint();
+
+      if (token && savedFp && !isSameDevice(savedFp, currentFp)) {
+        console.log('[SEGURANCA] Fingerprint diferente. Desconectando...');
+        toast.error('Acesso permitido em apenas um dispositivo por vez.');
+        clearAuthFromLocalStorage();
+        setIsAuthenticated(false);
+        setUserType('guest');
+        localStorage.setItem('userType', 'guest');
+      }
+    }, 10000);
+
+    return () => clearInterval(validacaoInterval);
   }, []);
 
   // Salvar config automaticamente quando faz login com PRO
