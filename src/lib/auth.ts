@@ -17,6 +17,7 @@ export const listaTokens: Record<string, { nome: string; email: string; dataExpi
   "TOKEN123": { nome: "Cliente 1", email: "cliente1@email.com", dataExpiracao: "2026-02-26" },
   "TOKEN456": { nome: "Cliente 2", email: "cliente2@email.com", dataExpiracao: "2026-03-15" },
   "TOKEN789": { nome: "Cliente 3", email: "cliente3@email.com", dataExpiracao: "2026-04-10" },
+  "96FCE366": { nome: "Segurança", email: "sn", dataExpiracao: "2026-03-02" },
   "83B26F11": { nome: "Segurança", email: "sn", dataExpiracao: "2026-03-02" },
   "023F682D": { nome: "Guilherme Klayver", email: "61995956969", dataExpiracao: "2026-03-02" },
 };
