@@ -24,7 +24,12 @@ export async function registrarSessao(token: string, fingerprintId: string): Pro
       .single();
 
     if (erroLeitura && erroLeitura.code !== 'PGRST116') {
-      console.error('[SUPABASE] Erro ao verificar sessão existente:', erroLeitura);
+      console.error('[SUPABASE] Erro ao verificar sessão existente:', {
+        code: erroLeitura.code,
+        message: erroLeitura.message,
+        details: erroLeitura.details,
+        hint: erroLeitura.hint
+      });
       return null;
     }
 
@@ -41,7 +46,12 @@ export async function registrarSessao(token: string, fingerprintId: string): Pro
         .single();
 
       if (error) {
-        console.error('[SUPABASE] Erro ao atualizar sessão:', error);
+        console.error('[SUPABASE] Erro ao atualizar sessão:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
         return null;
       }
 
@@ -61,14 +71,22 @@ export async function registrarSessao(token: string, fingerprintId: string): Pro
       .single();
 
     if (error) {
-      console.error('[SUPABASE] Erro ao criar sessão:', error);
+      console.error('[SUPABASE] Erro ao criar sessão:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      });
       return null;
     }
 
     console.log('[SUPABASE] Sessão criada:', data);
     return data;
   } catch (err) {
-    console.error('[SUPABASE] Erro inesperado ao registrar sessão:', err);
+    console.error('[SUPABASE] Erro inesperado ao registrar sessão:', {
+      message: err instanceof Error ? err.message : String(err),
+      stack: err instanceof Error ? err.stack : undefined
+    });
     return null;
   }
 }
@@ -96,7 +114,12 @@ export async function validarSessao(token: string, fingerprintId: string): Promi
         // Nenhuma sessão encontrada
         return { valida: false, motivo: 'Sessão não encontrada' };
       }
-      console.error('[SUPABASE] Erro ao validar sessão:', error);
+      console.error('[SUPABASE] Erro ao validar sessão:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      });
       return { valida: false, motivo: 'Erro ao validar sessão' };
     }
 
@@ -117,7 +140,10 @@ export async function validarSessao(token: string, fingerprintId: string): Promi
 
     return { valida: true };
   } catch (err) {
-    console.error('[SUPABASE] Erro inesperado ao validar sessão:', err);
+    console.error('[SUPABASE] Erro inesperado ao validar sessão:', {
+      message: err instanceof Error ? err.message : String(err),
+      stack: err instanceof Error ? err.stack : undefined
+    });
     return { valida: false, motivo: 'Erro ao validar sessão' };
   }
 }
@@ -131,14 +157,22 @@ export async function encerrarSessao(token: string): Promise<boolean> {
       .eq('token', token);
 
     if (error) {
-      console.error('[SUPABASE] Erro ao encerrar sessão:', error);
+      console.error('[SUPABASE] Erro ao encerrar sessão:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      });
       return false;
     }
 
     console.log('[SUPABASE] Sessão encerrada');
     return true;
   } catch (err) {
-    console.error('[SUPABASE] Erro inesperado ao encerrar sessão:', err);
+    console.error('[SUPABASE] Erro inesperado ao encerrar sessão:', {
+      message: err instanceof Error ? err.message : String(err),
+      stack: err instanceof Error ? err.stack : undefined
+    });
     return false;
   }
 }
@@ -153,7 +187,12 @@ export async function validarNovoDispositivo(token: string, fingerprintId: strin
       .eq('token', token);
 
     if (erroLeitura) {
-      console.error('[SUPABASE] Erro ao buscar dispositivos:', erroLeitura);
+      console.error('[SUPABASE] Erro ao buscar dispositivos:', {
+        code: erroLeitura.code,
+        message: erroLeitura.message,
+        details: erroLeitura.details,
+        hint: erroLeitura.hint
+      });
       return { permitido: false, motivo: 'Erro ao validar dispositivo' };
     }
 
@@ -240,7 +279,10 @@ export async function validarNovoDispositivo(token: string, fingerprintId: strin
     // Permitir login e registrar novo dispositivo
     return { permitido: true };
   } catch (err) {
-    console.error('[SUPABASE] Erro inesperado ao validar dispositivo:', err);
+    console.error('[SUPABASE] Erro inesperado ao validar dispositivo:', {
+      message: err instanceof Error ? err.message : String(err),
+      stack: err instanceof Error ? err.stack : undefined
+    });
     return { permitido: false, motivo: 'Erro ao validar dispositivo' };
   }
 }
@@ -257,7 +299,12 @@ export async function registrarDispositivo(token: string, fingerprintId: string)
       .single();
 
     if (erroVerificacao && erroVerificacao.code !== 'PGRST116') {
-      console.error('[SUPABASE] Erro ao verificar dispositivo:', erroVerificacao);
+      console.error('[SUPABASE] Erro ao verificar dispositivo:', {
+        code: erroVerificacao.code,
+        message: erroVerificacao.message,
+        details: erroVerificacao.details,
+        hint: erroVerificacao.hint
+      });
       return false;
     }
 
@@ -282,14 +329,22 @@ export async function registrarDispositivo(token: string, fingerprintId: string)
       });
 
     if (error) {
-      console.error('[SUPABASE] Erro ao registrar dispositivo:', error);
+      console.error('[SUPABASE] Erro ao registrar dispositivo:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      });
       return false;
     }
 
     console.log('[SUPABASE] Dispositivo registrado:', fingerprintId);
     return true;
   } catch (err) {
-    console.error('[SUPABASE] Erro inesperado ao registrar dispositivo:', err);
+    console.error('[SUPABASE] Erro inesperado ao registrar dispositivo:', {
+      message: err instanceof Error ? err.message : String(err),
+      stack: err instanceof Error ? err.stack : undefined
+    });
     return false;
   }
 }
