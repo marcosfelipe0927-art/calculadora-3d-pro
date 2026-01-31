@@ -76,6 +76,15 @@ export async function registrarSessao(token: string, fingerprintId: string): Pro
 // Função para validar se a sessão é válida para este dispositivo
 export async function validarSessao(token: string, fingerprintId: string): Promise<{ valida: boolean; motivo?: string }> {
   try {
+    // Primeiro, importar a função de validação de token para verificar expiração
+    const { isTokenValid } = await import('./auth');
+    
+    // Verificar se o token expirou
+    const validacaoToken = isTokenValid(token);
+    if (!validacaoToken.valido) {
+      return { valida: false, motivo: validacaoToken.motivo || 'Token expirado' };
+    }
+
     const { data: sessao, error } = await supabase
       .from('sessoes_ativas')
       .select('*')
