@@ -32,9 +32,6 @@ import {
   isSameDevice,
   clearAuthFromLocalStorage,
 } from "@/lib/auth";
-import { registrarSessao, validarSessao, encerrarSessao, validarNovoDispositivo, registrarDispositivo } from "@/lib/supabase";
-import { executarMigracoes } from "@/lib/migrations";
-import { forcarAtualizacao } from "@/lib/version";
 import { useState, useEffect, useRef } from "react";
 
 export default function Home() {
@@ -45,8 +42,6 @@ export default function Home() {
   const [userType, setUserType] = useState<'guest' | 'pro'>('guest');
   const [calculosRealizados, setCalculosRealizados] = useState<number>(0);
   const [showToken, setShowToken] = useState<boolean>(false);
-  const [sessaoInvalidada, setSessaoInvalidada] = useState<boolean>(false);
-  const [mensagemSessao, setMensagemSessao] = useState<string>("");
   
   // Ref para scroll automático
   const resultadosRef = useRef<HTMLDivElement>(null);
@@ -95,9 +90,6 @@ export default function Home() {
   const [abaterDoEstoque, setAbaterDoEstoque] = useState<boolean>(true);
 
   useEffect(() => {
-    // Verificar nova versão e forçar atualização se necessário
-    forcarAtualizacao();
-
     // Verificar autenticacao no carregamento
     const savedToken = getTokenFromLocalStorage();
     const savedFingerprint = getFingerprintFromLocalStorage();
@@ -184,32 +176,6 @@ export default function Home() {
     }
   }, []);
 
-  // Validar sessão periodicamente (a cada 10 segundos)
-  useEffect(() => {
-    if (!isAuthenticated) return;
-
-    const validarSessaoPeriodica = async () => {
-      const token = getTokenFromLocalStorage();
-      const fingerprint = getFingerprintFromLocalStorage();
-
-      if (!token || !fingerprint) return;
-
-      const resultado = await validarSessao(token, fingerprint);
-      if (!resultado.valida) {
-        setSessaoInvalidada(true);
-        setMensagemSessao(resultado.motivo || 'Sessão inválida');
-        clearAuthFromLocalStorage();
-        setIsAuthenticated(false);
-        setUserType('guest');
-        localStorage.setItem('userType', 'guest');
-        toast.error(resultado.motivo || 'Sessão encerrada');
-      }
-    };
-
-    const intervalo = setInterval(validarSessaoPeriodica, 10000); // A cada 10 segundos
-    return () => clearInterval(intervalo);
-  }, [isAuthenticated]);
-
   // Salvar config automaticamente quando faz login com PRO
   useEffect(() => {
     if (userType === 'pro' && isAuthenticated) {
@@ -234,7 +200,7 @@ export default function Home() {
     }
   }, [userType, isAuthenticated, nomeMaquina, cMaq, estado, vHora, vFrete, multExcl, chkIcms, chkIss, chkRisco, exclusivo, mkpShopee, mkpMl, chkFrete, descKit]);
 
-  const handleTokenLogin = async () => {
+  const handleTokenLogin = () => {
     if (!tokenInput.trim()) {
       toast.error("Digite um token valido");
       return;
@@ -256,26 +222,6 @@ export default function Home() {
       return;
     }
 
-    // Validar se pode logar em um novo dispositivo (limite de 3)
-    const validacaoDispositivo = await validarNovoDispositivo(tokenInput, currentFingerprint);
-    if (!validacaoDispositivo.permitido) {
-      toast.error(validacaoDispositivo.motivo || "Nao eh possivel logar neste dispositivo");
-      return;
-    }
-
-    // Registrar sessão no Supabase
-    const sessao = await registrarSessao(tokenInput, currentFingerprint);
-    if (!sessao) {
-      toast.error("Erro ao registrar sessão. Tente novamente.");
-      return;
-    }
-
-    // Registrar dispositivo no histórico
-    await registrarDispositivo(tokenInput, currentFingerprint);
-
-    // Executar migrações automáticas na primeira vez
-    await executarMigracoes();
-
     // Se ja existe um fingerprint salvo e nao corresponde
     if (savedFingerprint && !isSameDevice(savedFingerprint, currentFingerprint)) {
       toast.error("Este token ja esta em uso em outro dispositivo");
@@ -292,11 +238,7 @@ export default function Home() {
     toast.success("Acesso concedido!");
   };
 
-  const handleLogout = async () => {
-    const token = getTokenFromLocalStorage();
-    if (token) {
-      await encerrarSessao(token);
-    }
+  const handleLogout = () => {
     clearAuthFromLocalStorage();
     setIsAuthenticated(false);
     setUserType('guest');
